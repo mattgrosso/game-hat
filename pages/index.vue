@@ -1,25 +1,15 @@
 <template>
   <div class="container">
     <div>
-      <Logo />
-      <h1 class="title">game-hat</h1>
-      <div class="links">
-        <a
-          href="https://nuxtjs.org/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="button--green"
-        >
-          Documentation
-        </a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="button--grey"
-        >
-          GitHub
-        </a>
+      <h1 class="title">Welcome to the Game Hat</h1>
+      <h2 class="subtitle">What would you like to do?</h2>
+      <div class="options p-4">
+        <nuxt-link to="/add-games">
+          <button class="btn btn-primary mx-3">Add games to the hat</button>
+        </nuxt-link>
+        <nuxt-link to="/draw-game">
+          <button class="btn btn-success mx-3">Draw a game from the hat</button>
+        </nuxt-link>
       </div>
     </div>
   </div>

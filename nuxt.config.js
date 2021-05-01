@@ -70,5 +70,7 @@ export default {
   // },
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
-  build: {},
+  build: {
+    transpile: /@code-bucket.*/, // transpile ESM modules within all fullcalendar packages
+  },
 };
