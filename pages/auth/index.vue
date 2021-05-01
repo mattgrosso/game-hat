@@ -45,10 +45,10 @@ export default {
   },
   methods: {
     async onSubmit() {
-      let authUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDcGNK9jufWQ1DQXBZQ4fCtqz4qA4KUGP4";
+      let authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.fbAPIKey}`;
 
       if (!this.isLogin) {
-        authUrl = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDcGNK9jufWQ1DQXBZQ4fCtqz4qA4KUGP4'
+        authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.fbAPIKey}`;
       }
 
       try {
