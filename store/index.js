@@ -8,6 +8,29 @@ const objectToQuery = (object) => {
   return Object.keys(object).map((key) => [key, object[key]].join("=")).join("&&");
 }
 
+const parseCollection = (collection) => {
+  return collection.map((game) => {
+    return {
+      imageUrl: game.image._text,
+      name: game.name._text,
+      plays: game.numplays._text,
+      status: {
+        forTrade: game.status._attributes.fortrade,
+        modified: game.status._attributes.lastmodified,
+        own: game.status._attributes.own,
+      },
+      thumbnailUrl: game.thumbnail._text,
+      yearPublished: game.yearpublished._text,
+      attributes: {
+        collid: game._attributes.collid,
+        objectId: game._attributes.objectid,
+        objectType: game._attributes.objecttype,
+        subtype: game._attributes.subtype,
+      }
+    }
+  })
+}
+
 const createStore = () => {
   return new Vuex.Store({
     state: {
@@ -45,10 +68,13 @@ const createStore = () => {
           )
 
           vuexContext.commit('setToken', result.idToken);
+
           localStorage.setItem('token', result.idToken);
           localStorage.setItem('tokenExpiration', new Date().getTime() + +result.expiresIn * 1000);
+
           Cookie.set('jwt', result.idToken);
           Cookie.set('tokenExpiration', new Date().getTime() + +result.expiresIn * 1000);
+
           return result;
         } catch (error) {
           return error;
@@ -87,7 +113,7 @@ const createStore = () => {
 
         vuexContext.commit('setToken', token);
       },
-      async getBGGUser(vuexContext, username) {
+      async getBGGUserCollection(vuexContext, username) {
         const query = {
           username: username,
           excludesubtype: 'boardgameexpansion',
@@ -98,11 +124,11 @@ const createStore = () => {
 
         if (response.status === 202) {
           setTimeout(() => {
-            this.dispatch('getBGGUser', username);
+            this.dispatch('getBGGUserCollection', username);
           }, 250);
         } else {
           const jsonResponse = convert.xml2json(response.data, {compact: true, spaces: 4});
-          return JSON.parse(jsonResponse).items;
+          return parseCollection(JSON.parse(jsonResponse).items.item);
         }
       },
       async searchBGG(vuexContext, query) {

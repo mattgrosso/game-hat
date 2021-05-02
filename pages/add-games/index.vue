@@ -29,25 +29,26 @@
     <ul v-if="filteredCollection" class="game-shelf">
       <li 
         v-for="game in filteredCollection"
-        :key="game._attributes.objectid"
-        :ref="game._attributes.objectid"
+        :key="game.attributes.objectId"
+        :ref="game.attributes.objectId"
         class="game"
-        :class="{'selected-game': game._attributes.objectid === selectedGameId}"
+        :class="{'selected-game': game.attributes.objectId === selectedGameId}"
       >
         <img 
-          :id="`popover-target-${game._attributes.objectid}`"
-          :src="game.thumbnail._text"
-          :alt="`${game.name._text} Cover Image`"
-          @click="selectGame(game._attributes.objectid)"
+          :id="`popover-target-${game.attributes.objectId}`"
+          :src="game.thumbnailUrl"
+          :alt="`${game.name} Cover Image`"
+          @click="selectGame(game.attributes.objectId)"
         >
         <b-popover
-          :target="`popover-target-${game._attributes.objectid}`"
+          :target="`popover-target-${game.attributes.objectId}`"
           placement="auto"
-          :show="isSelected(game._attributes.objectid)"
+          :show="isSelected(game.attributes.objectId)"
         >
-          <template #title>{{ game.name._text }}</template>
-          <p>Added to collection on {{ game.status._attributes.lastmodified }}</p>
-          <p>Played {{ game.numplays._text }} time{{game.numplays._text === '1' ? '' : 's'}}</p>
+          <template #title>{{ game.name }}</template>
+          <p>Added to collection on {{ game.status.modified }}</p>
+          <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
+          <button class="btn btn-primary" @click="addGame(game)">Add to Hat</button>
         </b-popover>
       </li>
     </ul>
@@ -60,8 +61,8 @@ import { shuffle, sortBy } from 'lodash';
 export default {
   middleware: ['check-auth', 'auth'],
   async fetch() {
-    const search = await this.$store.dispatch('getBGGUser', 'mattgrosso');
-    this.collection = search.item;
+    const search = await this.$store.dispatch('getBGGUserCollection', 'mattgrosso');
+    this.collection = search;
   },
   data() {
    return {
@@ -72,7 +73,7 @@ export default {
   },
   computed: {
     filteredCollection () {
-      return this.collection.filter((game) => game.name._text.toLowerCase().includes(this.filterText.toLowerCase()));
+      return this.collection.filter((game) => game.name.toLowerCase().includes(this.filterText.toLowerCase()));
     }
   },
   methods: {
@@ -86,7 +87,7 @@ export default {
       this.collection = shuffle(this.collection);
     },
     alphabetizeOrder () {
-      this.collection = sortBy(this.collection, [(game) => game.name._text]);
+      this.collection = sortBy(this.collection, [(game) => game.name]);
     },
     randomGame () {
       const randomIndex = Math.floor(Math.random() * this.filteredCollection.length);
@@ -94,7 +95,7 @@ export default {
     },
     scrollToRandom () {
       const randomGame = this.randomGame();
-      const randomRef = this.$refs[randomGame._attributes.objectid][0];
+      const randomRef = this.$refs[randomGame.attributes.objectId][0];
 
       const options = {
         easing: 'linear',
@@ -104,7 +105,7 @@ export default {
         cancelable: true,
         onDone: (element) => {
           setTimeout(() => {
-            this.selectGame(randomGame._attributes.objectid);
+            this.selectGame(randomGame.attributes.objectId);
           }, 1100);
         },
         x: false,
@@ -112,7 +113,27 @@ export default {
       }
 
       this.$scrollTo(randomRef, 500, options);
-    }
+    },
+    async addGame(game) {
+      const gameForHat = {
+        ...game,
+        timeStamp: Date.now(),
+        user: {
+          name: "Matt"
+        }
+      };
+
+      const post = await this.$axios.post(
+        `https://game-hat-default-rtdb.firebaseio.com/game-hat.json?auth=${this.$store.state.token}`,
+        gameForHat
+      );
+
+      if (post.statusText == 'OK') {
+        console.error('Ok');
+      } else {
+        console.log('post: ', post);
+      }
+    },
   },
 }
 </script>
@@ -122,10 +143,10 @@ export default {
   $filters-height: 70px;
 
   .filters {
-    display: flex;
-    justify-content: space-between;
-    height: $filters-height;
     align-items: center;
+    display: flex;
+    height: $filters-height;
+    justify-content: space-between;
   }
 
   .game-shelf {
@@ -139,15 +160,16 @@ export default {
 
     .game {
       background-color: #ededed;
-      border-bottom: 32px solid #322d1b;
-      padding: 16px 16px 0;
+      border-bottom: 24px solid #322d1b;
       cursor: pointer;
+      margin-bottom: 16px;
+      padding: 16px 16px 0;
       position: relative;
 
       &:hover,
       &.selected-game {
         img {
-          transform: scale(1.05) translateY(-5px);
+          transform: scale(1.05) translateY(-3px);
         }
       }
 
@@ -158,10 +180,10 @@ export default {
       }
 
       .details {
-        position: absolute;
-        bottom: 0;
-        border: 1px solid #000;
         background-color: white;
+        border: 1px solid #000;
+        bottom: 0;
+        position: absolute;
       }
     }
   }
