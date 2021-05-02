@@ -10,6 +10,12 @@
         </button>
         <button
           class="shuffle btn btn-secondary"
+          @click="alphabetizeOrder"
+        >
+          A-Z
+        </button>
+        <button
+          class="shuffle btn btn-secondary"
           @click="scrollToRandom"
         >
           Random
@@ -43,7 +49,7 @@
 </template>
 
 <script>
-import { shuffle } from 'lodash';
+import { shuffle, sortBy } from 'lodash';
 
 export default {
   async fetch() {
@@ -64,6 +70,9 @@ export default {
   methods: {
     shuffleOrder () {
       this.collection = shuffle(this.collection);
+    },
+    alphabetizeOrder () {
+      this.collection = sortBy(this.collection, [(game) => game.name._text]);
     },
     randomGame () {
       const randomIndex = Math.floor(Math.random() * this.filteredCollection.length);
