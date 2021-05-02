@@ -26,19 +26,25 @@
         <input id="filter-input" v-model="filterText" type="text"/>
       </div>
     </div>
-    <ul class="game-shelf">
+    <ul v-if="filteredCollection" class="game-shelf">
       <li 
         v-for="game in filteredCollection"
         :key="game._attributes.objectid"
         :ref="game._attributes.objectid"
         class="game"
+        :class="{'selected-game': game._attributes.objectid === selectedGameId}"
       >
         <img 
           :id="`popover-target-${game._attributes.objectid}`"
-          :src="game.image._text"
+          :src="game.thumbnail._text"
           :alt="`${game.name._text} Cover Image`"
+          @click="selectGame(game._attributes.objectid)"
         >
-        <b-popover :target="`popover-target-${game._attributes.objectid}`" triggers="hover" placement="top">
+        <b-popover
+          :target="`popover-target-${game._attributes.objectid}`"
+          placement="auto"
+          :show="isSelected(game._attributes.objectid)"
+        >
           <template #title>{{ game.name._text }}</template>
           <p>Added to collection on {{ game.status._attributes.lastmodified }}</p>
           <p>Played {{ game.numplays._text }} time{{game.numplays._text === '1' ? '' : 's'}}</p>
@@ -59,7 +65,8 @@ export default {
   data() {
    return {
      collection: [],
-     filterText: ""
+     filterText: "",
+     selectedGameId: null
    }
   },
   computed: {
@@ -68,6 +75,12 @@ export default {
     }
   },
   methods: {
+    selectGame (gameId) {
+      this.selectedGameId = gameId;
+    },
+    isSelected (gameId) {
+      return this.selectedGameId === gameId;
+    },
     shuffleOrder () {
       this.collection = shuffle(this.collection);
     },
@@ -79,9 +92,8 @@ export default {
       return this.filteredCollection[randomIndex];
     },
     scrollToRandom () {
-      const randomRef = this.$refs[this.randomGame()._attributes.objectid][0];
-
-      document.querySelectorAll(".selected-game").forEach((el) => el.classList.remove("selected-game"));
+      const randomGame = this.randomGame();
+      const randomRef = this.$refs[randomGame._attributes.objectid][0];
 
       const options = {
         easing: 'linear',
@@ -91,7 +103,7 @@ export default {
         cancelable: true,
         onDone: (element) => {
           setTimeout(() => {
-            element.classList.add("selected-game");
+            this.selectGame(randomGame._attributes.objectid);
           }, 1100);
         },
         x: false,
