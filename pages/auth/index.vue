@@ -53,7 +53,8 @@ export default {
 
       await this.$store.dispatch('authenticateUser', config);
       if (this.$store.getters.isAuthenticated) {
-        this.$router.push(this.$route.query.path);
+        const path = this.$route.query.path || '/'
+        this.$router.push(path);
       } else {
         // One likely error here is that an email is already in use (the person already has an account)
       }

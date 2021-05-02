@@ -34,7 +34,9 @@ const parseCollection = (collection) => {
 const createStore = () => {
   return new Vuex.Store({
     state: {
-      token: null
+      token: null,
+      email: null,
+      tokenExpiration: null
     },
     getters: {
       isAuthenticated(state) {
@@ -45,8 +47,20 @@ const createStore = () => {
       setToken (state, token) {
         state.token = token;
       },
+      setEmail (state, email) {
+        state.email = email;
+      },
+      setTokenExpiration (state, tokenExpiration) {
+        state.tokenExpiration = tokenExpiration;
+      },
       clearToken (state) {
         state.token = null;
+      },
+      clearEmail (state) {
+        state.email = null;
+      },
+      clearTokenExpiration (state) {
+        state.tokenExpiration = null;
       }
     },
     actions: {
@@ -68,12 +82,16 @@ const createStore = () => {
           )
 
           vuexContext.commit('setToken', result.idToken);
+          vuexContext.commit('setEmail', result.email);
+          vuexContext.commit('setTokenExpiration', new Date().getTime() + +result.expiresIn * 1000);
 
-          localStorage.setItem('token', result.idToken);
-          localStorage.setItem('tokenExpiration', new Date().getTime() + +result.expiresIn * 1000);
+          localStorage.setItem('game-hat-token', result.idToken);
+          localStorage.setItem('game-hat-email', result.email);
+          localStorage.setItem('game-hat-token-expiration', new Date().getTime() + +result.expiresIn * 1000);
 
-          Cookie.set('jwt', result.idToken);
-          Cookie.set('tokenExpiration', new Date().getTime() + +result.expiresIn * 1000);
+          Cookie.set('game-hat-token', result.idToken);
+          Cookie.set('game-hat-email', result.email);
+          Cookie.set('game-hat-token-expiration', new Date().getTime() + +result.expiresIn * 1000);
 
           return result;
         } catch (error) {
@@ -82,6 +100,7 @@ const createStore = () => {
       },
       initAuth (vuexContext, request) {
         let token;
+        let email;
         let tokenExpiration;
 
         if (request) {
@@ -89,29 +108,53 @@ const createStore = () => {
             return;
           }
 
-          const jwtCookie = request.headers.cookie
+          const tokenCookie = request.headers.cookie
             .split(';')
-            .find((c) => c.trim().startsWith('jwt='));
+            .find((c) => c.trim().startsWith('game-hat-token='));
+          const tokenEmail = request.headers.cookie
+            .split(';')
+            .find((c) => c.trim().startsWith('game-hat-email='));
           const expirationCookie = request.headers.cookie
             .split(';')
-            .find((c) => c.trim().startsWith('tokenExpiration='));
+            .find((c) => c.trim().startsWith('game-hat-token-expiration='));
 
-          if (!jwtCookie) {
+          if (!tokenCookie) {
             return;
           }
           
-          token = jwtCookie.split('=')[1];
+          token = tokenCookie.split('=')[1];
+          email = tokenEmail.split('=')[1];
           tokenExpiration = expirationCookie.split('=')[1];
         } else {
-          token = localStorage.getItem('token');
-          tokenExpiration = localStorage.getItem('tokenExpiration');
+          token = localStorage.getItem('game-hat-token');
+          email = localStorage.getItem('game-hat-email');
+          tokenExpiration = localStorage.getItem('game-hat-token-expiration');
         }
 
         if (new Date().getTime() > +tokenExpiration || !token) {
           vuexContext.commit('clearToken');
+          vuexContext.commit("clearEmail");
+          vuexContext.commit("clearTokenExpiration");
         }
 
         vuexContext.commit('setToken', token);
+        vuexContext.commit('setEmail', email);
+        vuexContext.commit('setTokenExpiration', tokenExpiration);
+      },
+      logout (vuexContext) {
+        vuexContext.commit("clearToken");
+        vuexContext.commit("clearEmail");
+        vuexContext.commit("clearTokenExpiration");
+
+        Cookie.remove("game-hat-token");
+        Cookie.remove("game-hat-email");
+        Cookie.remove("game-hat-token-expiration");
+
+        if (process.client) {
+          localStorage.removeItem("game-hat-token");
+          localStorage.removeItem("game-hat-email");
+          localStorage.removeItem("game-hat-token-expiration");
+        }
       },
       async getBGGUserCollection(vuexContext, username) {
         const query = {

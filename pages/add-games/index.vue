@@ -25,6 +25,7 @@
         <label for="filter-input">Search: </label>
         <input id="filter-input" v-model="filterText" type="text"/>
       </div>
+      <button class="btn btn-secondary" @click="$store.dispatch('logout')">Logout</button>
     </div>
     <ul v-if="filteredCollection" class="game-shelf">
       <li 
@@ -116,10 +117,10 @@ export default {
     },
     async addGame(game) {
       const gameForHat = {
-        ...game,
         timeStamp: Date.now(),
+        game: game,
         user: {
-          name: "Matt"
+          email: this.$store.state.email
         }
       };
 
