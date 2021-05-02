@@ -45,30 +45,17 @@ export default {
   },
   methods: {
     async onSubmit() {
-      let authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.fbAPIKey}`;
+      const config = {
+        isLogin: this.isLogin,
+        email: this.email,
+        password: this.password
+      };
 
-      if (!this.isLogin) {
-        authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.fbAPIKey}`;
-      }
-
-      try {
-        const result = await this.$axios.$post(
-          authUrl,
-          {
-            email: this.email,
-            password: this.password,
-            returnSecureToken: true
-          }
-        )
-
-        // Right here people will get back a token that we will need to submit when they are posting
-        // to the database. Probably there should be some sort of user object that we keep in vuex.
-        // Also, maybe there's a way to store someone's token in local storage so they don't have to
-        // log in all the time.
-        console.log('result: ', result);
-      } catch (error) {
+      await this.$store.dispatch('authenticateUser', config);
+      if (this.$store.getters.isAuthenticated) {
+        this.$router.push(this.$route.query.path);
+      } else {
         // One likely error here is that an email is already in use (the person already has an account)
-        console.log('error: ', error);
       }
     }
   },

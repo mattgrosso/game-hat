@@ -58,6 +58,7 @@
 import { shuffle, sortBy } from 'lodash';
 
 export default {
+  middleware: ['check-auth', 'auth'],
   async fetch() {
     const search = await this.$store.dispatch('getBGGUser', 'mattgrosso');
     this.collection = search.item;

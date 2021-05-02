@@ -2,6 +2,7 @@ import Vuex from 'vuex';
 import axios from 'axios';
 import { parseBggXmlApi2SearchResponse, parseBggXmlApi2ThingResponse } from '@code-bucket/board-game-geek';
 import convert from 'xml-js';
+import Cookie from 'js-cookie';
 
 const objectToQuery = (object) => {
   return Object.keys(object).map((key) => [key, object[key]].join("=")).join("&&");
@@ -9,10 +10,83 @@ const objectToQuery = (object) => {
 
 const createStore = () => {
   return new Vuex.Store({
-    state: {},
-    getters: {},
-    mutations: {},
+    state: {
+      token: null
+    },
+    getters: {
+      isAuthenticated(state) {
+        return state.token != null;
+      }
+    },
+    mutations: {
+      setToken (state, token) {
+        state.token = token;
+      },
+      clearToken (state) {
+        state.token = null;
+      }
+    },
     actions: {
+      async authenticateUser (vuexContext, config) {
+        let authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.fbAPIKey}`;
+
+        if (!config.isLogin) {
+          authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.fbAPIKey}`;
+        }
+
+        try {
+          const result = await this.$axios.$post(
+            authUrl,
+            {
+              email: config.email,
+              password: config.password,
+              returnSecureToken: true
+            }
+          )
+
+          vuexContext.commit('setToken', result.idToken);
+          localStorage.setItem('token', result.idToken);
+          localStorage.setItem('tokenExpiration', new Date().getTime() + +result.expiresIn * 1000);
+          Cookie.set('jwt', result.idToken);
+          Cookie.set('tokenExpiration', new Date().getTime() + +result.expiresIn * 1000);
+          return result;
+        } catch (error) {
+          return error;
+        }
+      },
+      initAuth (vuexContext, request) {
+        let token;
+        let tokenExpiration;
+
+        if (request) {
+          if (!request.headers.cookie) {
+            return;
+          }
+
+          const jwtCookie = request.headers.cookie
+            .split(';')
+            .find((c) => c.trim().startsWith('jwt='));
+          const expirationCookie = request.headers.cookie
+            .split(';')
+            .find((c) => c.trim().startsWith('tokenExpiration='));
+
+          if (!jwtCookie) {
+            return;
+          }
+          
+          token = jwtCookie.split('=')[1];
+          tokenExpiration = expirationCookie.split('=')[1];
+        } else {
+          token = localStorage.getItem('token');
+          tokenExpiration = localStorage.getItem('tokenExpiration');
+        }
+
+        if (new Date().getTime() > +tokenExpiration || !token) {
+          vuexContext.commit('clearToken');
+        }
+
+        vuexContext.commit('setToken', token);
+      },
       async getBGGUser(vuexContext, username) {
         const query = {
           username: username,
