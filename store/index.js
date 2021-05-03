@@ -29,7 +29,7 @@ const parseCollection = (collection) => {
       }
     }
   })
-}
+};
 
 const createStore = () => {
   return new Vuex.Store({
@@ -186,7 +186,7 @@ const createStore = () => {
         const response = await axios.get(`https://api.geekdo.com/xmlapi2/thing?id=${itemId}&versions=1`);
         const bggResponse = parseBggXmlApi2ThingResponse(response.data);
 
-        return bggResponse;
+        return bggResponse.items[0];
       },
       async getBGGItems(vuexContext, itemIds) {
         const response = await axios.get(`https://api.geekdo.com/xmlapi2/thing?id=${itemIds.join(',')}&versions=1`);

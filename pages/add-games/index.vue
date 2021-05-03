@@ -47,8 +47,11 @@
           :show="isSelected(game.attributes.objectId)"
         >
           <template #title>{{ game.name }}</template>
-          <p>Added to collection on {{ game.status.modified }}</p>
-          <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
+          <div v-if="selectedGame" class="game-details">
+            <p v-html="truncatedDescription(selectedGame.description)"></p>
+            <p>{{ displayPlayerCount(selectedGame.minplayers, selectedGame.maxplayers) }}</p>
+            <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
+          </div>
           <button class="btn btn-primary" @click="addGame(game)">Add to Hat</button>
         </b-popover>
       </li>
@@ -69,7 +72,8 @@ export default {
    return {
      collection: [],
      filterText: "",
-     selectedGameId: null
+     selectedGameId: null,
+     selectedGame: null
    }
   },
   computed: {
@@ -78,8 +82,18 @@ export default {
     }
   },
   methods: {
-    selectGame (gameId) {
+    async selectGame (gameId) {
       this.selectedGameId = gameId;
+      this.selectedGame = null;
+      this.getMoreDetailsForGame(gameId);
+    },
+    async getMoreDetailsForGame(gameId) {
+      const game = await this.$store.dispatch('getBGGItem', gameId);
+      this.selectedGame = game;
+    },
+    truncatedDescription (description) {
+      const truncated = `${description.replace(/\.\.\./g,", ").replace(/\!/g,".").split(".").slice(0,2).join(". ")}.`
+      return truncated;
     },
     isSelected (gameId) {
       return this.selectedGameId === gameId;
@@ -135,6 +149,20 @@ export default {
         console.log('post: ', post);
       }
     },
+    displayPlayerCount (min, max) {
+      let count = `${min} - ${max}`;
+      let players = "players";
+
+      if (min === max) {
+        count = `${min}`;
+      }
+
+      if (count === '1') {
+        players = "player";
+      }
+      
+      return `${count} ${players}`
+    }
   },
 }
 </script>
