@@ -64,6 +64,7 @@ const createStore = () => {
       }
     },
     actions: {
+      // Authentication
       async authenticateUser (vuexContext, config) {
         let authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.fbAPIKey}`;
 
@@ -156,6 +157,7 @@ const createStore = () => {
           localStorage.removeItem("game-hat-token-expiration");
         }
       },
+      // BGG API
       async getBGGUserCollection(vuexContext, username) {
         const query = {
           username: username,
