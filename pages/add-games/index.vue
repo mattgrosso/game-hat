@@ -50,6 +50,10 @@
           <div v-if="selectedGame" class="game-details">
             <p v-html="truncatedDescription(selectedGame.description)"></p>
             <p>{{ displayPlayerCount(selectedGame.minplayers, selectedGame.maxplayers) }}</p>
+            <div v-show="selectedGame.minplayers != selectedGame.maxplayers">
+              <p>Good with {{ goodWith(selectedGame) }}</p>
+              <p>Best with {{ bestWith(selectedGame) }}</p>
+            </div>
             <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
           </div>
           <button class="btn btn-primary" @click="addGame(game)">Add to Hat</button>
@@ -60,7 +64,7 @@
 </template>
 
 <script>
-import { shuffle, sortBy } from 'lodash';
+import { shuffle, sortBy, maxBy } from 'lodash';
 
 export default {
   middleware: ['check-auth', 'auth'],
@@ -94,6 +98,30 @@ export default {
     truncatedDescription (description) {
       const truncated = `${description.replace(/\.\.\./g,", ").replace(/\!/g,".").split(".").slice(0,2).join(". ")}.`
       return truncated;
+    },
+    playerCountPoll (game) {
+      const poll = game.polls.find((poll) => poll.name === "suggested_numplayers");
+      return {
+        totalVotes: poll.totalvotes,
+        results: poll.results.map((result) => {
+          return {
+            numPlayers: result._attributes.numplayers,
+            best: result.result.find((r) => r._attributes.value == "Best")._attributes.numvotes,
+            recommended: result.result.find((r) => r._attributes.value == "Recommended")._attributes.numvotes,
+            notRecommended: result.result.find((r) => r._attributes.value == "Not Recommended")._attributes.numvotes,
+          }
+        })
+      }
+    },
+    goodWith (game) {
+      const poll = this.playerCountPoll(game);
+      return poll.results.filter((result) => {
+        return (parseInt(result.best) + parseInt(result.recommended)) > parseInt(result.notRecommended)
+      }).map((result) => result.numPlayers).join(", ");
+    },
+    bestWith (game) {
+      const poll = this.playerCountPoll(game);
+      return maxBy(poll.results, (result) => parseInt(result.best)).numPlayers;
     },
     isSelected (gameId) {
       return this.selectedGameId === gameId;
