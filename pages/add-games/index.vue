@@ -51,8 +51,8 @@
             <p v-html="truncatedDescription(selectedGame.description)"></p>
             <p>{{ displayPlayerCount(selectedGame.minplayers, selectedGame.maxplayers) }}</p>
             <div v-show="selectedGame.minplayers != selectedGame.maxplayers">
-              <p>Good with {{ goodWith(selectedGame) }}</p>
-              <p>Best with {{ bestWith(selectedGame) }}</p>
+              <p v-if="goodWith(selectedGame)">Good with {{ goodWith(selectedGame) }}</p>
+              <p v-if="bestWith(selectedGame)">Best with {{ bestWith(selectedGame) }}</p>
             </div>
             <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
           </div>

@@ -31,6 +31,53 @@ const parseCollection = (collection) => {
   })
 };
 
+const parseItem = (item) => {
+  const parsedItem = {
+    id: item._attributes.id,
+    type: item._attributes.type,
+    thumbnail: item.thumbnail._text,
+    image: item.image._text,
+    links: [],
+    names: [],
+    yearpublished: item.yearpublished._attributes.value,
+    description: item.description._text,
+    minplayers: item.minplayers._attributes.value,
+    maxplayers: item.maxplayers._attributes.value,
+    polls: [],
+    playingtime: item.playingtime._attributes.value,
+    minplaytime: item.minplaytime._attributes.value,
+    maxplaytime: item.maxplaytime._attributes.value,
+    minage: item.minage._attributes.value,
+  }
+
+  item.link.forEach((link) => {
+    parsedItem.links.push({
+      id: link._attributes.id,
+      type: link._attributes.type,
+      value: link._attributes.value
+    })
+  })
+
+  item.name.forEach((name) => {
+    parsedItem.names.push({
+      value: name._attributes.value,
+      type: name._attributes.type,
+      sortindex: name._attributes.sortindex
+    })
+  })
+
+  item.poll.forEach((poll) => {
+    parsedItem.polls.push({
+      name: poll._attributes.name,
+      title: poll._attributes.title,
+      totalvotes: poll._attributes.totalvotes,
+      results: poll.results
+    })
+  })
+
+  return parsedItem;
+}
+
 const createStore = () => {
   return new Vuex.Store({
     state: {
@@ -184,9 +231,13 @@ const createStore = () => {
       },
       async getBGGItem(vuexContext, itemId) {
         const response = await axios.get(`https://api.geekdo.com/xmlapi2/thing?id=${itemId}&versions=1`);
-        const bggResponse = parseBggXmlApi2ThingResponse(response.data);
-
-        return bggResponse.items[0];
+        try {
+          const bggResponse = parseBggXmlApi2ThingResponse(response.data);
+          return bggResponse.items[0];
+        } catch (error) {
+          const jsonResponse = convert.xml2json(response.data, {compact: true, spaces: 4});
+          return parseItem(JSON.parse(jsonResponse).items.item);
+        }
       },
       async getBGGItems(vuexContext, itemIds) {
         const response = await axios.get(`https://api.geekdo.com/xmlapi2/thing?id=${itemIds.join(',')}&versions=1`);
