@@ -1,6 +1,23 @@
 <template>
   <div class="draw-game p-5">
-    <button v-if="!drawnObject" class="btn btn-primary" @click="drawGame">Draw a Game</button>
+    <div class="draw-filters">
+      <ul class="users list-unstyled">
+        <li
+          v-for="user in users"
+          :key="user.id"
+          class="m-1"
+          @click="toggleUser(user)"
+        >
+          <h4>
+            <span
+              class="badge badge-pill badge-primary"
+              :class="userSelectedIndex(user) !== false ? 'badge-primary' : 'badge-light'"
+              >{{ user.name }}</span>
+          </h4>
+        </li>
+      </ul>
+    <button class="btn btn-primary" @click="drawGame">Draw a Game</button>
+    </div>
     <div v-if="drawnObject" class="drawn-game">
       <img :src="drawnGame.imageUrl" :alt="`${drawnGame.name} Cover`">
       <h2 class="col-12 text-center">{{ drawnGame.name }}</h2>
@@ -14,8 +31,14 @@ import { sample } from "lodash";
 
 export default {
   middleware: ['check-auth', 'auth'],
+  async fetch() {
+    const users = await this.loadUsers();
+    this.users = users;
+  },
   data() {
     return {
+      users: [],
+      selectedUsers: [],
       drawnObject: null
     }
   },
@@ -27,19 +50,20 @@ export default {
       return `${Math.floor(
         (Date.now() - this.drawnObject.timeStamp) / 1000 / 60 / 60 / 24
       )} days ago`;
-    },
+    }
   },
   methods: {
     async drawGame() {
       const games = await this.loadHat();
+      const filteredGames = this.filteredGames(games);
 
-      if (games.length) {
-        const randomGame = sample(games);
+      if (filteredGames.length) {
+        const randomGame = sample(filteredGames);
         this.drawnObject = randomGame;
 
         this.removeGameFromHat(randomGame);
       } else {
-        this.showMessage('No games in the hat. Which is sad.');
+        console.log("No games in the hat matching filters");
         return 'Error Loading Game Title';
       }
     },
@@ -90,6 +114,46 @@ export default {
         return [];
       }
     },
+    async loadUsers() {
+      const resp = await this.$axios.get(
+        `https://game-hat-default-rtdb.firebaseio.com/users.json`
+      );
+
+      if (resp.statusText == 'OK') {
+        let users = [];
+
+        if (resp.data) {
+          users = Object.keys(resp.data).map((key) => {
+            const user = { ...resp.data[key], id: key };
+            return user;
+          });
+        }
+
+        return users;
+      } else {
+        console.log(resp);
+        return [];
+      }
+    },
+    filteredGames (games) {
+      return games.filter((game) => this.userSelectedIndex(game.user) !== false);
+    },
+    userSelectedIndex (user) {
+      const userSelectedIndex = this.selectedUsers.findIndex((u) => u.email == user.email);
+      
+      if (userSelectedIndex > -1) {
+        return userSelectedIndex;
+      } else {
+        return false;
+      }
+    },
+    toggleUser (user) {
+      if (this.userSelectedIndex(user) !== false) {
+        this.selectedUsers.splice(this.userSelectedIndex(user), 1);
+      } else {
+        this.selectedUsers.push(user);
+      }
+    }
   },
 }
 </script>
@@ -98,6 +162,19 @@ export default {
   .draw-game {
     display: flex;
     justify-content: center;
+
+    .draw-filters {
+      .users {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding: 0 20%;
+
+        li {
+          cursor: pointer;
+        }
+      }
+    }
 
     .drawn-game {
       display: flex;

@@ -77,8 +77,8 @@ import { shuffle, sortBy, maxBy, reverse } from 'lodash';
 export default {
   middleware: ['check-auth', 'auth'],
   async fetch() {
-    const search = await this.$store.dispatch('getBGGUserCollection', 'mattgrosso');
-    this.collection = search;
+    const collection = await this.$store.dispatch('getBGGUserCollection', 'mattgrosso');
+    this.collection = collection;
   },
   data() {
    return {
