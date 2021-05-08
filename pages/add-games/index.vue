@@ -16,6 +16,12 @@
         </button>
         <button
           class="shuffle btn btn-secondary"
+          @click="chronologicalOrder"
+        >
+          Recent
+        </button>
+        <button
+          class="shuffle btn btn-secondary"
           @click="scrollToRandom"
         >
           Random
@@ -46,6 +52,7 @@
           placement="auto"
           :show="isSelected(game.attributes.objectId)"
         >
+          <font-awesome-icon @click="clearSelection" class="close-popover" icon="times"/>
           <template #title>{{ game.name }}</template>
           <div v-if="selectedGame" class="game-details">
             <p v-html="truncatedDescription(selectedGame.description)"></p>
@@ -54,6 +61,7 @@
               <p v-if="goodWith(selectedGame)">Good with {{ goodWith(selectedGame) }}</p>
               <p v-if="bestWith(selectedGame)">Best with {{ bestWith(selectedGame) }}</p>
             </div>
+            <p>Added on {{ parsedAddedDate(game) }}</p>
             <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
           </div>
           <button class="btn btn-primary" @click="addGame(game)">Add to Hat</button>
@@ -64,7 +72,7 @@
 </template>
 
 <script>
-import { shuffle, sortBy, maxBy } from 'lodash';
+import { shuffle, sortBy, maxBy, reverse } from 'lodash';
 
 export default {
   middleware: ['check-auth', 'auth'],
@@ -91,6 +99,10 @@ export default {
       this.selectedGame = null;
       this.getMoreDetailsForGame(gameId);
     },
+    clearSelection () {
+      this.selectedGameId = null;
+      this.selectedGame = null;
+    },
     async getMoreDetailsForGame(gameId) {
       const game = await this.$store.dispatch('getBGGItem', gameId);
       this.selectedGame = game;
@@ -101,6 +113,11 @@ export default {
     },
     playerCountPoll (game) {
       const poll = game.polls.find((poll) => poll.name === "suggested_numplayers");
+
+      if (!poll.totalvotes) {
+        return;
+      }
+
       return {
         totalVotes: poll.totalvotes,
         results: poll.results.map((result) => {
@@ -115,13 +132,28 @@ export default {
     },
     goodWith (game) {
       const poll = this.playerCountPoll(game);
+
+      if (!poll) {
+        return;
+      }
+
       return poll.results.filter((result) => {
         return (parseInt(result.best) + parseInt(result.recommended)) > parseInt(result.notRecommended)
       }).map((result) => result.numPlayers).join(", ");
     },
     bestWith (game) {
       const poll = this.playerCountPoll(game);
+
+      if (!poll) {
+        return;
+      }
+
       return maxBy(poll.results, (result) => parseInt(result.best)).numPlayers;
+    },
+    parsedAddedDate(game) {
+      const date = new Date(game.status.modified);
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString(undefined, options);
     },
     isSelected (gameId) {
       return this.selectedGameId === gameId;
@@ -131,6 +163,9 @@ export default {
     },
     alphabetizeOrder () {
       this.collection = sortBy(this.collection, [(game) => game.name]);
+    },
+    chronologicalOrder () {
+      this.collection = reverse(sortBy(this.collection, [(game) => game.status.modified]));
     },
     randomGame () {
       const randomIndex = Math.floor(Math.random() * this.filteredCollection.length);
@@ -195,7 +230,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .add-games {
   $filters-height: 70px;
 
@@ -235,14 +270,15 @@ export default {
         max-height: 200px;
         transition: transform 0.2s;
       }
-
-      .details {
-        background-color: white;
-        border: 1px solid #000;
-        bottom: 0;
-        position: absolute;
-      }
     }
   }
+}
+
+.close-popover {
+  cursor: pointer;
+  font-size: 20px;
+  position: absolute;
+  right: 12px;
+  top: 8px;
 }
 </style>
