@@ -1,6 +1,6 @@
 <template>
   <div class="draw-game p-5">
-    <div class="draw-filters">
+    <div class="draw-filters bg-dark p-2 fixed-top">
       <ul class="users list-unstyled">
         <li
           v-for="user in users"
@@ -10,18 +10,20 @@
         >
           <h4>
             <span
-              class="badge badge-pill badge-primary"
-              :class="userSelectedIndex(user) !== false ? 'badge-primary' : 'badge-light'"
+              class="badge badge-pill"
+              :class="userSelectedIndex(user) !== false ? 'badge-success' : 'badge-secondary'"
               >{{ user.name }}</span>
           </h4>
         </li>
       </ul>
-    <button class="btn btn-primary" @click="drawGame">Draw a Game</button>
     </div>
-    <div v-if="drawnObject" class="drawn-game">
-      <img :src="drawnGame.imageUrl" :alt="`${drawnGame.name} Cover`">
-      <h2 class="col-12 text-center">{{ drawnGame.name }}</h2>
-      <p class="col-12 text-center">Added {{ daysAgo }} by {{drawnObject.user.email}}</p>
+    <div class="content">
+      <button class="btn btn-primary" @click="drawGame">Draw a Game</button>
+      <div v-if="drawnObject" class="drawn-game">
+        <img :src="drawnGame.imageUrl" :alt="`${drawnGame.name} Cover`">
+        <h2 class="col-12 text-center">{{ drawnGame.name }}</h2>
+        <p class="col-12 text-center">Added {{ daysAgo }} by {{drawnObject.user.email}}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -34,6 +36,7 @@ export default {
   async fetch() {
     const users = await this.loadUsers();
     this.users = users;
+    this.selectedUsers.push({ email: this.$store.state.email });
   },
   data() {
     return {
@@ -159,8 +162,11 @@ export default {
 </script>
 
 <style lang="scss">
+  $filters-height: 70px;
+  
   .draw-game {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
 
     .draw-filters {
@@ -168,7 +174,7 @@ export default {
         display: flex;
         justify-content: center;
         flex-wrap: wrap;
-        padding: 0 20%;
+        margin: 0;
 
         li {
           cursor: pointer;
@@ -176,14 +182,19 @@ export default {
       }
     }
 
-    .drawn-game {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+    .content {
+      margin: $filters-height 0 0;
 
-      img {
-        max-width: 50%;
+      .drawn-game {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+
+        img {
+          max-width: 50%;
+        }
       }
     }
+
   }
 </style>
