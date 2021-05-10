@@ -63,6 +63,7 @@ export default {
       };
 
       await this.$store.dispatch('authenticateUser', config);
+
       if (this.$store.getters.isAuthenticated) {
         await this.addUser({ name: this.name, email: this.email });
 
@@ -79,7 +80,7 @@ export default {
       );
 
       if (post.statusText == 'OK') {
-        console.error('User Added');
+        console.error('Logged In');
       } else {
         console.log('post: ', post);
       }

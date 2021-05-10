@@ -1,39 +1,47 @@
 <template>
   <div class="add-games">
-    <div class="filters bg-dark px-2 fixed-top">
-      <div class="button-group mx-2">
-        <button
-          class="shuffle btn btn-secondary"
-          @click="shuffleOrder"
-        >
-          Shuffle
+    <div class="filters-wrapper bg-dark fixed-top row p-2 py-md-0" >
+      <div class="filter-menu-buttons col-2 d-md-none align-items-center d-flex" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
+        <button v-show="showFilters" class="btn btn-secondary" @click="hideFilters">
+          <font-awesome-icon icon="times"/>
         </button>
-        <button
-          class="shuffle btn btn-secondary"
-          @click="alphabetizeOrder"
-        >
-          A-Z
-        </button>
-        <button
-          class="shuffle btn btn-secondary"
-          @click="chronologicalOrder"
-        >
-          Recent
-        </button>
-        <button
-          class="shuffle btn btn-secondary"
-          @click="scrollToRandom"
-        >
-          Random
+        <button v-show="!showFilters" class="btn btn-secondary" @click="revealFilters">
+          <font-awesome-icon icon="bars"/>
         </button>
       </div>
-      <div class="text-filter text-white mx-2">
-        <label for="filter-input">Search: </label>
-        <input id="filter-input" v-model="filterText" type="text"/>
+      <div class="filters bg-dark col-10 col-md-12 p-2" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
+        <div class="text-filter text-white col-12 col-md-4">
+          <input id="filter-input" v-model="filterText" type="text" placeholder="search"/>
+        </div>
+        <div class="button-group pt-4 pt-sm-0 col-12 col-md-8">
+          <button
+            class="shuffle btn btn-secondary"
+            @click="shuffleOrder"
+          >
+            Shuffle
+          </button>
+          <button
+            class="alphabetize btn btn-secondary"
+            @click="alphabetizeOrder"
+          >
+            A-Z
+          </button>
+          <button
+            class="chronological btn btn-secondary"
+            @click="chronologicalOrder"
+          >
+            Recent
+          </button>
+          <button
+            class="random btn btn-secondary"
+            @click="scrollToRandom"
+          >
+            Random
+          </button>
+        </div>
       </div>
-      <button class="btn btn-secondary" @click="$store.dispatch('logout')">Logout</button>
     </div>
-    <ul v-if="filteredCollection" class="game-shelf">
+    <ul v-if="filteredCollection" class="game-shelf" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
       <li 
         v-for="game in filteredCollection"
         :key="game.attributes.objectId"
@@ -53,7 +61,9 @@
           :show="isSelected(game.attributes.objectId)"
         >
           <font-awesome-icon @click="clearSelection" class="close-popover" icon="times"/>
-          <template #title>{{ game.name }}</template>
+          <template #title>
+            <span class="pr-4">{{ game.name }}</span>
+          </template>
           <div v-if="selectedGame" class="game-details">
             <p v-html="truncatedDescription(selectedGame.description)"></p>
             <p>{{ displayPlayerCount(selectedGame.minplayers, selectedGame.maxplayers) }}</p>
@@ -85,15 +95,26 @@ export default {
      collection: [],
      filterText: "",
      selectedGameId: null,
-     selectedGame: null
+     selectedGame: null,
+     showFilters: true
    }
   },
   computed: {
     filteredCollection () {
       return this.collection.filter((game) => game.name.toLowerCase().includes(this.filterText.toLowerCase()));
-    }
+    },
   },
   methods: {
+    hideFilters () {
+      this.showFilters = false;
+    },
+    revealFilters () {
+      this.showFilters = true;
+    },
+    logout () {
+      this.$store.dispatch('logout');
+      this.$router.push('/auth');
+    },
     async selectGame (gameId) {
       this.selectedGameId = gameId;
       this.selectedGame = null;
@@ -201,16 +222,23 @@ export default {
         }
       };
 
-      const post = await this.$axios.post(
-        `https://game-hat-default-rtdb.firebaseio.com/game-hat.json?auth=${this.$store.state.token}`,
-        gameForHat
-      );
+      try {
+        const post = await this.$axios.post(
+          `https://game-hat-default-rtdb.firebaseio.com/game-hat.json?auth=${this.$store.state.token}`,
+          gameForHat
+        );        
 
-      if (post.statusText == 'OK') {
-        console.error('Ok');
-      } else {
-        console.log('post: ', post);
+        if (post.statusText == 'OK') {
+          console.error('Ok');
+        } else {
+          console.log('post: ', post);
+        }
+      } catch (e) {
+        if (e.response.status === 401) {
+          this.$router.push({path: '/auth', query: {path: this.$route.path}});
+        }
       }
+
     },
     displayPlayerCount (min, max) {
       let count = `${min} - ${max}`;
@@ -232,13 +260,55 @@ export default {
 
 <style lang="scss">
 .add-games {
-  $filters-height: 70px;
+  $filters-max-height: 162px; // Total magic numbers. Gross.
+  $filters-medium-height: 116px;
+  $filters-min-height: 62px;
 
-  .filters {
-    align-items: center;
-    display: flex;
-    height: $filters-height;
-    justify-content: space-between;
+  .filters-wrapper {
+    .filter-menu-buttons {
+      &.filters-visible {
+        align-self: flex-start;
+        margin-top: 5px;
+      }
+    }
+
+    .filters {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+
+      @media screen and (min-width: 576px) {
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      @media screen and (min-width: 768px) {
+        flex-direction: row-reverse;
+      }
+
+      &.filters-hidden {
+        .button-group {
+          display: none;
+        }
+      }
+
+      .text-filter {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+
+      .button-group {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+
+        .btn {
+          margin: 4px 0 4px 8px;
+        }
+      }
+    }
   }
 
   .game-shelf {
@@ -247,8 +317,20 @@ export default {
     flex-wrap: wrap;
     justify-content: center;
     list-style: none;
-    margin: $filters-height 0 0;
+    margin: $filters-max-height 0 0;
     padding: 0;
+
+    &.filters-hidden {
+      margin-top: $filters-min-height;
+    }
+
+    @media screen and (min-width: 576px) {
+      margin-top: $filters-medium-height;
+    }
+
+    @media screen and (min-width: 768px) {
+      margin-top: $filters-min-height;
+    }
 
     .game {
       background-color: #ededed;
@@ -267,8 +349,12 @@ export default {
 
       img {
         box-shadow: 4px -4px 10px 4px #0000005e;
-        max-height: 200px;
+        max-height: 120px;
         transition: transform 0.2s;
+
+        @media screen and (min-width: 576px) {
+          max-height: 200px;
+        }
       }
     }
   }
