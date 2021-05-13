@@ -40,10 +40,16 @@
         {{ isLogin ? "Create account" : "Sign in" }}
       </button>
     </form>
+    <!-- <button class="btn btn-danger" @click="googleSignIn">
+      Click Here
+    </button> -->
   </div>
 </template>
 
 <script>
+// import firebase from 'firebase';
+// import Cookie from 'js-cookie';
+
 export default {
   name: "Login",
   data() {
@@ -51,10 +57,41 @@ export default {
      isLogin: true,
      name: "",
      email: "",
-     password: ""
+     password: "",
+    //  provider: null
    }
   },
   methods: {
+    // async googleSignIn () {
+    //   this.provider = new firebase.auth.GoogleAuthProvider();
+    //   try {
+    //     const auth = await firebase.auth().signInWithPopup(this.provider);
+    //     console.log('auth: ', auth);
+    //     this.$store.commit('setToken', auth.credential.accessToken);
+    //     this.$store.commit('setEmail', auth.additionalUserInfo.profile.email);
+    //     this.$store.commit('setTokenExpiration', new Date().getTime() + 1000000000000);
+
+    //     localStorage.setItem('game-hat-token', auth.credential.accessToken);
+    //     localStorage.setItem('game-hat-email', auth.additionalUserInfo.profile.email);
+    //     localStorage.setItem('game-hat-token-expiration', new Date().getTime() + 1000000000000);
+
+    //     Cookie.set('game-hat-token', auth.credential.accessToken);
+    //     Cookie.set('game-hat-email', auth.additionalUserInfo.profile.email);
+    //     Cookie.set('game-hat-token-expiration', new Date().getTime() + 1000000000000);
+
+    //     await this.addUser({
+    //       name: auth.additionalUserInfo.profile.given_name,
+    //       email: auth.additionalUserInfo.profile.email
+    //     });
+
+    //     const path = this.$route.query.path || '/'
+    //     this.$router.push(path);
+    //   } catch (error) {
+    //     console.log('error: ', error);
+    //     // One likely error here is that an email is already in use (the person already has an account)
+    //   }
+      
+    // },
     async onSubmit() {
       const config = {
         isLogin: this.isLogin,
