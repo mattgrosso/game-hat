@@ -1,6 +1,11 @@
 <template>
   <div class="draw-game">
     <div v-if="!drawnObject" class="draw-filters bg-dark p-2 col-12">
+      <nuxt-link class="col-12 d-flex justify-content-end align-items-center" to="/">
+        <button class="home btn btn-info">
+          <font-awesome-icon icon="home"/>
+        </button>
+      </nuxt-link>
       <div class="users-wrapper text-light border border-light p-2 my-2 rounded">
         <p>Who's playing?</p>
         <ul class="users list-unstyled">
@@ -89,6 +94,7 @@ export default {
 
     if (process.client) {
       if (!this.$store.state.bggUsername) {
+        console.error('no bggUsername in store');
         this.$router.push('/');
       }
     }

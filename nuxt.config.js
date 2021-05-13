@@ -55,7 +55,7 @@ export default {
 
   fontawesome: {
     icons: {
-      solid: ['faTimes', 'faBars', 'faCheckCircle']
+      solid: ['faTimes', 'faBars', 'faCheckCircle', 'faHome']
     }
   },
 

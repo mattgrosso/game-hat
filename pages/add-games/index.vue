@@ -1,46 +1,59 @@
 <template>
   <div class="add-games">
-    <div class="filters-wrapper bg-dark fixed-top row p-2 py-md-0" >
-      <div class="filter-menu-buttons col-2 d-md-none align-items-center d-flex" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
-        <button v-show="showFilters" class="btn btn-secondary" @click="hideFilters">
+    <div class="filters-wrapper bg-dark fixed-top row p-2 d-md-flex" >
+      <div class="filter-menu-buttons col-6 d-md-none d-flex justify-content-start align-items-center" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
+        <button v-show="showFilters" class="btn btn-info" @click="hideFilters">
           <font-awesome-icon icon="times"/>
         </button>
-        <button v-show="!showFilters" class="btn btn-secondary" @click="revealFilters">
+        <button v-show="!showFilters" class="btn btn-info" @click="revealFilters">
           <font-awesome-icon icon="bars"/>
         </button>
       </div>
-      <div class="filters bg-dark col-10 col-md-12 p-2" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
+      <nuxt-link class="col-6 col-md-1 d-flex justify-content-end align-items-center" to="/">
+        <button class="home btn btn-info">
+          <font-awesome-icon icon="home"/>
+        </button>
+      </nuxt-link>
+      <div class="filters bg-dark col-12 col-md-11 pt-4 pt-md-0 d-md-flex" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
         <div class="text-filter text-white col-12 col-md-4">
-          <input id="filter-input" v-model="filterText" type="text" placeholder="search"/>
+          <input id="filter-input" class="col-12" v-model="filterText" type="text" placeholder="search"/>
           <span>
-            {{this.filteredCollection.length}} / {{ this.collection.length }}
+            {{ this.filteredCollection.length }} / {{ this.collection.length }}
           </span>
         </div>
-        <div class="button-group pt-4 pt-sm-0 col-12 col-md-8">
-          <button
-            class="shuffle btn btn-secondary"
-            @click="shuffleOrder"
-          >
-            Shuffle
-          </button>
-          <button
-            class="alphabetize btn btn-secondary"
-            @click="alphabetizeOrder"
-          >
-            A-Z
-          </button>
-          <button
-            class="chronological btn btn-secondary"
-            @click="chronologicalOrder"
-          >
-            Recent
-          </button>
-          <button
-            class="random btn btn-secondary"
-            @click="scrollToRandom"
-          >
-            Random
-          </button>
+        <div class="button-group col-12 col-md-8 p-3 py-md-0 d-md-flex justify-content-end">
+          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
+            <button
+              class="shuffle btn btn-info btn-block"
+              @click="shuffleOrder"
+            >
+              Shuffle
+            </button>
+          </div>
+          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
+            <button
+              class="alphabetize btn btn-info btn-block"
+              @click="alphabetizeOrder"
+            >
+              A-Z
+            </button>
+          </div>
+          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
+            <button
+              class="chronological btn btn-info btn-block"
+              @click="chronologicalOrder"
+            >
+              Recent
+            </button>
+          </div>
+          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
+            <button
+              class="random btn btn-info btn-block"
+              @click="scrollToRandom"
+            >
+              Random
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -103,11 +116,17 @@ export default {
   middleware: ['check-auth', 'auth'],
   async mounted() {
     if (!this.$store.state.bggUsername) {
+      console.error('no bggUsername in store');
       this.$router.push('/');
     }
 
     const collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
     this.collection = collection;
+
+    window.addEventListener('scroll', this.handleScroll);
+  },
+  destroyed () {
+    window.removeEventListener('scroll', this.handleScroll);
   },
   data() {
    return {
@@ -128,7 +147,11 @@ export default {
   },
   computed: {
     filteredCollection () {
-      return this.collection.filter((game) => game.name.toLowerCase().includes(this.filterText.toLowerCase()));
+      if (this.collection) {
+        return this.collection.filter((game) => game.name.toLowerCase().includes(this.filterText.toLowerCase()));
+      } else {
+        return [];
+      }
     },
     buttonClass () {
       if (this.checked) {
@@ -146,6 +169,13 @@ export default {
     },
     revealFilters () {
       this.showFilters = true;
+    },
+    handleScroll ($event) {
+      const scrollTop = $event.srcElement.scrollingElement.scrollTop;
+
+      if (scrollTop > 100) {
+        this.showFilters = false;
+      }
     },
     logout () {
       this.$store.dispatch('logout');
@@ -344,37 +374,17 @@ export default {
 
 <style lang="scss">
 .add-games {
-  $filters-max-height: 162px; // Total magic numbers. Gross.
-  $filters-medium-height: 116px;
-  $filters-min-height: 62px;
+  $filters-max-height: 325px; // Total magic numbers. Gross.
+  $filters-min-height: 54px;
 
   .filters-wrapper {
-    .filter-menu-buttons {
-      &.filters-visible {
-        align-self: flex-start;
-        margin-top: 5px;
-      }
-    }
-
     .filters {
-      @media screen and (min-width: 576px) {
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-
-      @media screen and (min-width: 768px) {
-        flex-direction: row-reverse;
-      }
-
       &.filters-hidden {
-        .button-group {
-          display: none;
-          
-          @media screen and (min-width: 576px) {
-            display: flex;
-          }
+        display: none;
+        padding: 0;
+
+        @media screen and (min-width: 768px) {
+          display: block;
         }
       }
 
@@ -384,23 +394,16 @@ export default {
         align-items: center;
         position: relative;
 
+        input {
+          padding: 6px 12px;
+        }
+
         span {
           color: grey;
           font-size: 0.5rem;
           position: absolute;
           right: 21px;
           top: 4px;
-        }
-      }
-
-      .button-group {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-
-        .btn {
-          margin: 4px 0 4px 8px;
         }
       }
     }
@@ -420,7 +423,7 @@ export default {
     }
 
     @media screen and (min-width: 576px) {
-      margin-top: $filters-medium-height;
+      margin-top: $filters-max-height;
     }
 
     @media screen and (min-width: 768px) {

@@ -1,19 +1,19 @@
 <template>
   <div class="game-hat p-4">
-    <h1 class="title my-5 col-12 d-flex justify-content-center align-items-center">
-      <span v-show="!switchingHats">{{bggUser}}'s&nbsp;</span>
-      <span v-show="switchingHats" class="input-group col-4" @keyup="handleKeyup">
+    <div class="title my-5 col-12 justify-content-center align-items-center">
+      <div v-show="!switchingHats" class="h3 my-2">{{bggUser}}'s</div>
+      <div v-show="switchingHats" class="input-group col-4 mx-auto my-2" @keyup="handleKeyup">
         <input type="text" class="form-control" ref="bggUserInput" v-model="bggUser">
         <span class="input-group-append">
           <button class="btn btn-success" type="button" @click="switchingHats = false">
             <font-awesome-icon class="button-icon" icon="check-circle"/>
           </button>
         </span>
-      </span>
-      <span>
+      </div>
+      <h1>
         Game Hat
-      </span>
-    </h1>
+      </h1>
+    </div>
     <h2 class="subtitle h5 col-12">What would you like to do?</h2>
     <div class="options p-4">
       <nuxt-link to="/add-games">
@@ -30,12 +30,10 @@
 <script>
 export default {
   name: "game-hat-index",
-  fetch() {
-    if (process.client) {
-      const bggUser = localStorage.getItem('game-hat-bgg-username');
-      this.bggUser = bggUser;
-      this.$store.commit("setBGGUser", bggUser);
-    }
+  mounted() {
+    const bggUser = localStorage.getItem('game-hat-bgg-username');
+    this.bggUser = bggUser;
+    this.$store.commit("setBGGUser", bggUser);
   },
   data() {
    return {
