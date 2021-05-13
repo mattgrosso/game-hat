@@ -83,7 +83,8 @@ const createStore = () => {
     state: {
       token: null,
       email: null,
-      tokenExpiration: null
+      tokenExpiration: null,
+      bggUsername: null
     },
     getters: {
       isAuthenticated(state) {
@@ -99,6 +100,10 @@ const createStore = () => {
       },
       setTokenExpiration (state, tokenExpiration) {
         state.tokenExpiration = tokenExpiration;
+      },
+      setBGGUser (state, username) {
+        localStorage.setItem('game-hat-bgg-username', username);
+        state.bggUsername = username;
       },
       clearToken (state) {
         state.token = null;

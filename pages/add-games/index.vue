@@ -99,9 +99,14 @@
 import { shuffle, sortBy, maxBy, reverse } from 'lodash';
 
 export default {
+  name: 'add-games',
   middleware: ['check-auth', 'auth'],
-  async fetch() {
-    const collection = await this.$store.dispatch('getBGGUserCollection', 'mattgrosso');
+  async mounted() {
+    if (!this.$store.state.bggUsername) {
+      this.$router.push('/');
+    }
+
+    const collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
     this.collection = collection;
   },
   data() {
@@ -262,7 +267,7 @@ export default {
     async addGame(game) {
       this.loading = true;
       const hat = await this.$axios.get(
-        `https://game-hat-default-rtdb.firebaseio.com/game-hat.json`
+        `https://game-hat-default-rtdb.firebaseio.com/game-hats/${this.$store.state.bggUsername}.json`
       );
 
       if (hat.data) {
@@ -296,7 +301,7 @@ export default {
 
       try {
         const post = await this.$axios.post(
-          `https://game-hat-default-rtdb.firebaseio.com/game-hat.json?auth=${this.$store.state.token}`,
+          `https://game-hat-default-rtdb.firebaseio.com/game-hats/${this.$store.state.bggUsername}.json?auth=${this.$store.state.token}`,
           gameForHat
         );        
 
@@ -366,6 +371,10 @@ export default {
       &.filters-hidden {
         .button-group {
           display: none;
+          
+          @media screen and (min-width: 576px) {
+            display: flex;
+          }
         }
       }
 

@@ -82,10 +82,16 @@ import { sample } from "lodash";
 export default {
   name: "draw-game",
   middleware: ['check-auth', 'auth'],
-  async fetch() {
+  async mounted() {
     const users = await this.loadUsers();
     this.users = users;
     this.selectedUsers.push({ email: this.$store.state.email });
+
+    if (process.client) {
+      if (!this.$store.state.bggUsername) {
+        this.$router.push('/');
+      }
+    }
   },
   data() {
     return {
@@ -157,7 +163,7 @@ export default {
 
       try {
         const addToHistory = await this.$axios.post(
-          `https://game-hat-default-rtdb.firebaseio.com/game-hat-history.json?auth=${this.$store.state.token}`,
+          `https://game-hat-default-rtdb.firebaseio.com/game-hat-histories/${this.$store.state.bggUsername}.json?auth=${this.$store.state.token}`,
           gameForHistory
         );
 
@@ -175,7 +181,7 @@ export default {
       }
 
       const removeFromHat = await this.$axios.delete(
-        `https://game-hat-default-rtdb.firebaseio.com/game-hat/${game.id}.json?auth=${this.$store.state.token}`
+        `https://game-hat-default-rtdb.firebaseio.com/game-hats/${this.$store.state.bggUsername}/${game.id}.json?auth=${this.$store.state.token}`
       );
 
       if (removeFromHat.statusText != 'OK') {
@@ -185,7 +191,7 @@ export default {
     },
     async loadHat() {
       const resp = await this.$axios.get(
-        `https://game-hat-default-rtdb.firebaseio.com/game-hat.json`
+        `https://game-hat-default-rtdb.firebaseio.com/game-hats/${this.$store.state.bggUsername}.json`
       );
 
       if (resp.statusText == 'OK') {
