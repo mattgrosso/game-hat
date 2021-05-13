@@ -1,7 +1,7 @@
 <template>
-  <div class="add-games">
+  <div v-if="filteredCollection" class="add-games">
     <div class="filters-wrapper bg-dark fixed-top row p-2 d-md-flex" >
-      <div class="filter-menu-buttons col-6 d-md-none d-flex justify-content-start align-items-center" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
+      <div class="filter-menu-buttons col-2 d-md-none d-flex justify-content-start align-items-center" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
         <button v-show="showFilters" class="btn btn-info" @click="hideFilters">
           <font-awesome-icon icon="times"/>
         </button>
@@ -9,7 +9,10 @@
           <font-awesome-icon icon="bars"/>
         </button>
       </div>
-      <nuxt-link class="col-6 col-md-1 d-flex justify-content-end align-items-center" to="/">
+      <div class="username-mobile col-8 col-md-2 text-white align-items-center font-weight-bold justify-content-center">
+        <p class="m-0">{{ $store.state.bggUsername}}</p>
+      </div>
+      <nuxt-link class="col-2 col-md-1 d-flex justify-content-end align-items-center" to="/">
         <button class="home btn btn-info">
           <font-awesome-icon icon="home"/>
         </button>
@@ -17,11 +20,11 @@
       <div class="filters bg-dark col-12 col-md-11 pt-4 pt-md-0 d-md-flex" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
         <div class="text-filter text-white col-12 col-md-4">
           <input id="filter-input" class="col-12" v-model="filterText" type="text" placeholder="search"/>
-          <span>
-            {{ this.filteredCollection.length }} / {{ this.collection.length }}
+          <span v-if="collection">
+            {{ filteredCollection.length }} / {{ collection.length }}
           </span>
         </div>
-        <div class="button-group col-12 col-md-8 p-3 py-md-0 d-md-flex justify-content-end">
+        <div class="button-group col-12 col-md-6 p-3 py-md-0 d-md-flex justify-content-end">
           <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
             <button
               class="shuffle btn btn-info btn-block"
@@ -54,6 +57,9 @@
               Random
             </button>
           </div>
+        </div>
+        <div class="username-desktop col-md-2 text-white align-items-center font-weight-bold border border-white justify-content-center">
+          <p class="m-0">{{ $store.state.bggUsername}}</p>
         </div>
       </div>
     </div>
@@ -115,15 +121,18 @@ export default {
   name: 'add-games',
   middleware: ['check-auth', 'auth'],
   async mounted() {
+    const bggUser = this.$store.getters.localStorageBGGUsername;
+
     if (!this.$store.state.bggUsername) {
       console.error('no bggUsername in store');
+
       this.$router.push('/');
+    } else {
+      const collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
+      this.collection = collection;
+  
+      window.addEventListener('scroll', this.handleScroll);
     }
-
-    const collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
-    this.collection = collection;
-
-    window.addEventListener('scroll', this.handleScroll);
   },
   destroyed () {
     window.removeEventListener('scroll', this.handleScroll);
@@ -378,6 +387,22 @@ export default {
   $filters-min-height: 54px;
 
   .filters-wrapper {
+    .username-mobile {
+      display: flex;
+
+      @media screen and (min-width: 768px) {
+        display: none;
+      }
+    }
+
+    .username-desktop {
+      display: none;
+
+      @media screen and (min-width: 768px) {
+        display: flex;
+      }
+    }
+
     .filters {
       &.filters-hidden {
         display: none;

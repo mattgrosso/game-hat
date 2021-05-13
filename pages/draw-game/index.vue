@@ -1,11 +1,16 @@
 <template>
   <div class="draw-game">
     <div v-if="!drawnObject" class="draw-filters bg-dark p-2 col-12">
-      <nuxt-link class="col-12 d-flex justify-content-end align-items-center" to="/">
-        <button class="home btn btn-info">
-          <font-awesome-icon icon="home"/>
-        </button>
-      </nuxt-link>
+      <div class="top-nav d-flex">
+        <nuxt-link class="col-8 col-md-10 d-flex justify-content-start align-items-center" to="/">
+          <button class="home btn btn-info">
+            <font-awesome-icon icon="home"/>
+          </button>
+        </nuxt-link>
+        <div class="username-mobile col-4 col-md-2 text-white d-flex align-items-center justify-content-center font-weight-bold border border-white">
+          <p class="m-0">{{ $store.state.bggUsername}}</p>
+        </div>
+      </div>
       <div class="users-wrapper text-light border border-light p-2 my-2 rounded">
         <p>Who's playing?</p>
         <ul class="users list-unstyled">
@@ -93,6 +98,9 @@ export default {
     this.selectedUsers.push({ email: this.$store.state.email });
 
     if (process.client) {
+      const bggUser = this.$store.getters.localStorageBGGUsername;
+      this.$store.commit("setBGGUser", bggUser);
+
       if (!this.$store.state.bggUsername) {
         console.error('no bggUsername in store');
         this.$router.push('/');

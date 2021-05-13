@@ -9,6 +9,8 @@ const objectToQuery = (object) => {
 }
 
 const parseCollection = (collection) => {
+  collection = collection || [];
+
   return collection.map((game) => {
     return {
       imageUrl: game.image._text,
@@ -89,6 +91,13 @@ const createStore = () => {
     getters: {
       isAuthenticated(state) {
         return state.token != null;
+      },
+      localStorageBGGUsername (state) {
+        try {
+          return JSON.parse(localStorage.getItem('game-hat-bgg-username'));
+        } catch (error) {
+          return undefined;
+        }
       }
     },
     mutations: {
@@ -102,7 +111,7 @@ const createStore = () => {
         state.tokenExpiration = tokenExpiration;
       },
       setBGGUser (state, username) {
-        localStorage.setItem('game-hat-bgg-username', username);
+        localStorage.setItem('game-hat-bgg-username', JSON.stringify(username));
         state.bggUsername = username;
       },
       clearToken (state) {
