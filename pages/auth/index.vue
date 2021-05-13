@@ -1,6 +1,6 @@
 <template>
   <div class="sign-in-form">
-    <form @submit.prevent="onSubmit" class="col-6 mx-auto my-4">
+    <form @submit.prevent="onSubmit" class="col-12 col-md-6 mx-auto my-4">
       <div v-show="!isLogin" class="form-group">
         <label for="input-name">Name</label>
         <input
@@ -37,7 +37,7 @@
         class="btn btn-secondary btn-secondary my-2"
         @click.prevent="isLogin = !isLogin"
       >
-        Click here to {{ isLogin ? "create an account" : "sign in" }} instead
+        {{ isLogin ? "Create account" : "Sign in" }}
       </button>
     </form>
   </div>
@@ -85,7 +85,6 @@ export default {
         console.log('post: ', post);
       }
     },
-
   },
 }
 </script>

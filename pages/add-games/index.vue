@@ -12,6 +12,9 @@
       <div class="filters bg-dark col-10 col-md-12 p-2" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
         <div class="text-filter text-white col-12 col-md-4">
           <input id="filter-input" v-model="filterText" type="text" placeholder="search"/>
+          <span>
+            {{this.filteredCollection.length}} / {{ this.collection.length }}
+          </span>
         </div>
         <div class="button-group pt-4 pt-sm-0 col-12 col-md-8">
           <button
@@ -214,9 +217,15 @@ export default {
       this.$scrollTo(randomRef, 500, options);
     },
     async addGame(game) {
+      const fullGame = await this.$store.dispatch('getBGGItem', game.attributes.objectId);
+
       const gameForHat = {
         timeStamp: Date.now(),
-        game: game,
+        game: {
+          ...fullGame,
+          plays: game.plays,
+          status: game.status
+        },
         user: {
           email: this.$store.state.email
         }
@@ -296,6 +305,15 @@ export default {
         display: flex;
         justify-content: flex-end;
         align-items: center;
+        position: relative;
+
+        span {
+          color: grey;
+          font-size: 0.5rem;
+          position: absolute;
+          right: 21px;
+          top: 4px;
+        }
       }
 
       .button-group {

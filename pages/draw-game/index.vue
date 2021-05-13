@@ -1,27 +1,72 @@
 <template>
-  <div class="draw-game p-5">
-    <div class="draw-filters bg-dark p-2 fixed-top">
-      <ul class="users list-unstyled">
-        <li
-          v-for="user in users"
-          :key="user.id"
-          class="m-1"
-          @click="toggleUser(user)"
-        >
-          <h4>
-            <span
-              class="badge badge-pill"
-              :class="userSelectedIndex(user) !== false ? 'badge-success' : 'badge-secondary'"
-              >{{ user.name }}</span>
-          </h4>
-        </li>
-      </ul>
+  <div class="draw-game">
+    <div class="draw-filters bg-dark p-2 col-12">
+      <div class="users-wrapper text-light border border-light p-2 my-2 rounded">
+        <p>Who's playing?</p>
+        <ul class="users list-unstyled">
+          <li
+            v-for="user in users"
+            :key="user.id"
+            class="m-1"
+            @click="toggleUser(user)"
+          >
+            <h4>
+              <span
+                class="badge badge-pill"
+                :class="userSelectedIndex(user) !== false ? 'badge-success' : 'badge-secondary'"
+                >{{ user.name }}</span>
+            </h4>
+          </li>
+        </ul>
+      </div>
+      <div class="player-counts-wrapper text-light border border-light p-2 my-2 rounded">
+        <p>How many players?</p>
+        <ul class="player-counts list-unstyled">
+          <li
+            v-for="(playerCount, index) in playerCounts"
+            :key="index"
+            class="m-1"
+            @click="setPlayerCount(playerCount)"
+          >
+            <h4>
+              <span
+                class="badge badge-pill"
+                :class="selectedPlayerCount.value === playerCount.value ? 'badge-success' : 'badge-secondary'"
+              >
+                {{ playerCount.display }}
+              </span>
+            </h4>
+          </li>
+        </ul>  
+      </div>
+      <div class="playtimes-wrapper text-light border border-light p-2 my-2 rounded">
+        <p>How long can you play?</p>
+        <ul class="playtimes list-unstyled">
+          <li
+            v-for="(playTime, index) in playTimes"
+            :key="index"
+            class="m-1"
+            @click="setMaxPlayTime(playTime)"
+          >
+            <h4>
+              <span
+                class="badge badge-pill"
+                :class="maxPlayTime.value === playTime.value ? 'badge-success' : 'badge-secondary'"
+              >
+                {{ playTime.display }}
+              </span>
+            </h4>
+          </li>
+        </ul>  
+      </div>
+      <div class="draw-game-button-wrapper col-12 d-flex p-3">
+        <button class="btn btn-primary mx-auto" @click="drawGame">Draw a Game</button>
+      </div>
     </div>
-    <div class="content">
-      <button class="btn btn-primary" @click="drawGame">Draw a Game</button>
-      <div v-if="drawnObject" class="drawn-game">
-        <img :src="drawnGame.imageUrl" :alt="`${drawnGame.name} Cover`">
-        <h2 class="col-12 text-center">{{ drawnGame.name }}</h2>
+    <div class="content p-2">
+      <div v-if="drawnObject" class="drawn-game px-3">
+        <img class="my-3" :src="drawnGame.image" :alt="`${drawnGame.names[0].value} Cover`">
+        <h2 class="col-12 text-center">{{ drawnGame.names[0].value }}</h2>
         <p class="col-12 text-center">Added {{ daysAgo }} by {{drawnObject.user.email}}</p>
       </div>
     </div>
@@ -32,6 +77,7 @@
 import { sample } from "lodash";
 
 export default {
+  name: "draw-game",
   middleware: ['check-auth', 'auth'],
   async fetch() {
     const users = await this.loadUsers();
@@ -42,6 +88,27 @@ export default {
     return {
       users: [],
       selectedUsers: [],
+      playerCounts: [
+        {display: "1", value: 1},
+        {display: "2", value: 2},
+        {display: "3", value: 3},
+        {display: "4", value: 4},
+        {display: "5", value: 5},
+        {display: "6", value: 6},
+        {display: "7", value: 7},
+        {display: "8", value: 8},
+        {display: "9", value: 9},
+        {display: "10", value: 10}
+      ],
+      selectedPlayerCount: {display: "1", value: 1},
+      playTimes: [
+        {display: "30'", value: 30},
+        {display: "60'", value: 60},
+        {display: "90'", value: 90},
+        {display: "120'", value: 120},
+        {display: "No Max", value: 100000},
+      ],
+      maxPlayTime: {display: "No Max", value: 100000},
       drawnObject: null
     }
   },
@@ -74,17 +141,23 @@ export default {
       const gameForHistory = { ...game };
       delete gameForHistory.id;
 
-      const addToHistory = await this.$axios.post(
-        `https://game-hat-default-rtdb.firebaseio.com/game-hat-history.json?auth=${this.$store.state.token}`,
-        gameForHistory
-      );
-
-      if (addToHistory.statusText != 'OK') {
-        console.error(
-          'Something went wrong with moving to History: ',
-          addToHistory
+      try {
+        const addToHistory = await this.$axios.post(
+          `https://game-hat-default-rtdb.firebaseio.com/game-hat-history.json?auth=${this.$store.state.token}`,
+          gameForHistory
         );
-        return;
+
+        if (addToHistory.statusText != 'OK') {
+          console.error(
+            'Something went wrong with moving to History: ',
+            addToHistory
+          );
+          return;
+        }
+      } catch (e) {
+        if (e.response.status === 401) {
+          this.$router.push({path: '/auth', query: {path: this.$route.path}});
+        }
       }
 
       const removeFromHat = await this.$axios.delete(
@@ -138,8 +211,18 @@ export default {
         return [];
       }
     },
+    inPlayerCountRange (game, count) {
+      return count >= game.minplayers && count <= game.maxplayers;
+    },
+    averagePlayTime (game) {
+      return (game.maxplaytime + game.minplaytime) / 2;
+    },
     filteredGames (games) {
-      return games.filter((game) => this.userSelectedIndex(game.user) !== false);
+      const userFiltered = games.filter((gameObj) => this.userSelectedIndex(gameObj.user) !== false);
+      const playerCountFiltered = userFiltered.filter((gameObj) => this.inPlayerCountRange(gameObj.game, this.selectedPlayerCount.value));
+      const lengthFiltered = playerCountFiltered.filter((gameObj) => this.averagePlayTime(gameObj.game) <= this.maxPlayTime.value);
+
+      return lengthFiltered;
     },
     userSelectedIndex (user) {
       const userSelectedIndex = this.selectedUsers.findIndex((u) => u.email == user.email);
@@ -156,23 +239,31 @@ export default {
       } else {
         this.selectedUsers.push(user);
       }
+
+      this.selectedPlayerCount = this.playerCounts.find((playerCount) => playerCount.value == this.selectedUsers.length);
+    },
+    setPlayerCount (playerCount) {
+      this.selectedPlayerCount = playerCount;
+    },
+    setMaxPlayTime (playTime) {
+      this.maxPlayTime = playTime;
     }
   },
 }
 </script>
 
 <style lang="scss">
-  $filters-height: 70px;
-  
   .draw-game {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
 
     .draw-filters {
-      .users {
+      .users,
+      .player-counts,
+      .playtimes {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         flex-wrap: wrap;
         margin: 0;
 
@@ -183,15 +274,13 @@ export default {
     }
 
     .content {
-      margin: $filters-height 0 0;
-
       .drawn-game {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
 
         img {
-          max-width: 50%;
+          max-width: 80%;
         }
       }
     }
