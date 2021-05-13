@@ -61,6 +61,8 @@
         <b-popover
           :target="`popover-target-${game.attributes.objectId}`"
           placement="auto"
+          boundary="viewport"
+          boundary-padding="25"
           :show="isSelected(game.attributes.objectId)"
         >
           <font-awesome-icon @click="clearSelection" class="close-popover" icon="times"/>
@@ -141,6 +143,7 @@ export default {
       this.$router.push('/auth');
     },
     async selectGame (gameId) {
+      this.hideFilters();
       this.selectedGameId = gameId;
       this.selectedGame = null;
       this.getMoreDetailsForGame(gameId);
@@ -205,15 +208,19 @@ export default {
       return this.selectedGameId === gameId;
     },
     shuffleOrder () {
+      this.hideFilters();
       this.collection = shuffle(this.collection);
     },
     alphabetizeOrder () {
+      this.hideFilters();
       this.collection = sortBy(this.collection, [(game) => game.name]);
     },
     chronologicalOrder () {
+      this.hideFilters();
       this.collection = reverse(sortBy(this.collection, [(game) => game.status.modified]));
     },
     randomGame () {
+      this.hideFilters();
       const randomIndex = Math.floor(Math.random() * this.filteredCollection.length);
       return this.filteredCollection[randomIndex];
     },
