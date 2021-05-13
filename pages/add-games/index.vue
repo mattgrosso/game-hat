@@ -79,13 +79,16 @@
             <p>Added on {{ parsedAddedDate(game) }}</p>
             <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
           </div>
-          <button class="btn btn-primary" :class="buttonClass" @click="addGame(game)">
+          <button v-if="!alert" class="btn btn-primary" :class="buttonClass" @click="addGame(game)">
             <span v-if="!loading && !checked">Add to Hat</span>
             <div v-if="loading" class="button-icon spinner-grow text-white" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
             <font-awesome-icon v-if="checked" class="button-icon" icon="check-circle"/>
           </button>
+          <div v-if="alert" class="alert col-12 mx-auto m-0" :class="alert ? alert.class : ''">
+            {{ alert.message }}
+          </div>
         </b-popover>
       </li>
     </ul>
@@ -109,7 +112,8 @@ export default {
      selectedGame: null,
      showFilters: true,
      loading: false,
-     checked: false
+     checked: false,
+     alert: null
    }
   },
   watch: {
@@ -245,8 +249,37 @@ export default {
 
       this.$scrollTo(randomRef, 500, options);
     },
+    showAlert (message, alertClass, timer) {
+      this.alert = {
+        message: message,
+        class: alertClass
+      };
+
+      setTimeout(() => {
+        this.alert = null
+      }, timer || 3000);
+    },
     async addGame(game) {
       this.loading = true;
+      const hat = await this.$axios.get(
+        `https://game-hat-default-rtdb.firebaseio.com/game-hat.json`
+      );
+
+      if (hat.data) {
+        const duplicateGame = Object.keys(hat.data).find((entry) => {
+          const sameUser = hat.data[entry].user.email == this.$store.state.email;
+          const sameGame = hat.data[entry].game.id == game.attributes.objectId;
+  
+          return sameUser && sameGame;
+        });
+  
+        if (duplicateGame) {
+          this.loading = false;
+          this.showAlert("Already in hat", "alert-warning", 2000)
+          return;
+        }        
+      }
+
       const fullGame = await this.$store.dispatch('getBGGItem', game.attributes.objectId);
 
       const gameForHat = {
@@ -413,18 +446,25 @@ export default {
   }
 }
 
-.close-popover {
-  cursor: pointer;
-  font-size: 20px;
-  position: absolute;
-  right: 12px;
-  top: 8px;
-}
+.popover {
+  .close-popover {
+    cursor: pointer;
+    font-size: 20px;
+    position: absolute;
+    right: 12px;
+    top: 8px;
+  }
 
-.button-icon,
-.button-icon.svg-inline--fa.fa-check-circle {
-  height: 20px;
-  margin: 0 21px;
-  width: 20px;
+  .button-icon,
+  .button-icon.svg-inline--fa.fa-check-circle {
+    height: 20px;
+    margin: 0 21px;
+    width: 20px;
+  }
+
+  .alert {
+    font-size: 16px;
+    padding: 6px 12px;
+  }
 }
 </style>

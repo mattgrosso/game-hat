@@ -127,10 +127,10 @@ export default {
     }
   },
   methods: {
-    showAlert (message, allertClass, timer) {
+    showAlert (message, alertClass, timer) {
       this.alert = {
         message: message,
-        class: allertClass
+        class: alertClass
       };
 
       setTimeout(() => {
