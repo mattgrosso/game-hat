@@ -312,12 +312,10 @@ export default {
     }
 
     .filters {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-
       @media screen and (min-width: 576px) {
         align-items: center;
+        display: flex;
+        flex-direction: column;
         justify-content: space-between;
       }
 
