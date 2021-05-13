@@ -55,7 +55,7 @@ export default {
 
   fontawesome: {
     icons: {
-      solid: ['faTimes', 'faBars']
+      solid: ['faTimes', 'faBars', 'faCheckCircle']
     }
   },
 
@@ -79,6 +79,6 @@ export default {
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
-    transpile: /@code-bucket.*/, // transpile ESM modules within all fullcalendar packages
+    transpile: [/@code-bucket.*/], // transpile ESM modules within all fullcalendar packages
   },
 };

@@ -77,7 +77,13 @@
             <p>Added on {{ parsedAddedDate(game) }}</p>
             <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
           </div>
-          <button class="btn btn-primary" @click="addGame(game)">Add to Hat</button>
+          <button class="btn btn-primary" :class="buttonClass" @click="addGame(game)">
+            <span v-if="!loading && !checked">Add to Hat</span>
+            <div v-if="loading" class="button-icon spinner-grow text-white" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <font-awesome-icon v-if="checked" class="button-icon" icon="check-circle"/>
+          </button>
         </b-popover>
       </li>
     </ul>
@@ -99,13 +105,29 @@ export default {
      filterText: "",
      selectedGameId: null,
      selectedGame: null,
-     showFilters: true
+     showFilters: true,
+     loading: false,
+     checked: false
    }
+  },
+  watch: {
+    selectedGame () {
+      this.checked = false;
+    }
   },
   computed: {
     filteredCollection () {
       return this.collection.filter((game) => game.name.toLowerCase().includes(this.filterText.toLowerCase()));
     },
+    buttonClass () {
+      if (this.checked) {
+        return "btn-success";
+      } else if (this.loading) {
+        return "btn-secondary";
+      } else {
+        return "btn-primary";
+      }
+    }
   },
   methods: {
     hideFilters () {
@@ -217,6 +239,7 @@ export default {
       this.$scrollTo(randomRef, 500, options);
     },
     async addGame(game) {
+      this.loading = true;
       const fullGame = await this.$store.dispatch('getBGGItem', game.attributes.objectId);
 
       const gameForHat = {
@@ -238,11 +261,18 @@ export default {
         );        
 
         if (post.statusText == 'OK') {
-          console.error('Ok');
+          this.loading = false;
+          this.checked = true;
+
+          setTimeout(() => {
+            this.checked = false;
+          }, 2000);
         } else {
           console.log('post: ', post);
         }
       } catch (e) {
+        this.loading = false;
+
         if (e.response.status === 401) {
           this.$router.push({path: '/auth', query: {path: this.$route.path}});
         }
@@ -384,5 +414,12 @@ export default {
   position: absolute;
   right: 12px;
   top: 8px;
+}
+
+.button-icon,
+.button-icon.svg-inline--fa.fa-check-circle {
+  height: 20px;
+  margin: 0 21px;
+  width: 20px;
 }
 </style>

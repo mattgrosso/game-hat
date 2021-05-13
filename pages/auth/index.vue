@@ -8,7 +8,7 @@
           v-model="name"
           class="form-control"
           id="input-name"
-          placeholder="Password"
+          placeholder="Name"
         >
       </div>
       <div class="form-group">

@@ -1,6 +1,6 @@
 <template>
   <div class="draw-game">
-    <div class="draw-filters bg-dark p-2 col-12">
+    <div v-if="!drawnObject" class="draw-filters bg-dark p-2 col-12">
       <div class="users-wrapper text-light border border-light p-2 my-2 rounded">
         <p>Who's playing?</p>
         <ul class="users list-unstyled">
@@ -59,10 +59,10 @@
           </li>
         </ul>  
       </div>
-      <div v-if="!drawnObject && !alert" class="draw-game-button-wrapper col-12 d-flex p-3">
+      <div v-if="!alert" class="draw-game-button-wrapper col-12 d-flex p-3">
         <button class="btn btn-primary mx-auto" @click="drawGame">Draw a Game</button>
       </div>
-      <div v-if="alert" class="alert col-6 p-3 mx-auto" :class="alert ? alert.class : ''">
+      <div v-if="alert" class="alert col-10 col-md-6 p-3 mx-auto" :class="alert ? alert.class : ''">
         {{ alert.message }}
       </div>
     </div>
@@ -277,8 +277,8 @@ export default {
       .player-counts,
       .playtimes {
         display: flex;
-        justify-content: flex-start;
         flex-wrap: wrap;
+        justify-content: flex-start;
         margin: 0;
 
         li {
@@ -289,11 +289,13 @@ export default {
 
     .content {
       .drawn-game {
+        align-items: flex-start;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
 
         img {
+          max-height: 70vh;
           max-width: 80%;
         }
       }
