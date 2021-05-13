@@ -59,8 +59,11 @@
           </li>
         </ul>  
       </div>
-      <div class="draw-game-button-wrapper col-12 d-flex p-3">
+      <div v-if="!drawnObject && !alert" class="draw-game-button-wrapper col-12 d-flex p-3">
         <button class="btn btn-primary mx-auto" @click="drawGame">Draw a Game</button>
+      </div>
+      <div v-if="alert" class="alert col-6 p-3 mx-auto" :class="alert ? alert.class : ''">
+        {{ alert.message }}
       </div>
     </div>
     <div class="content p-2">
@@ -109,7 +112,8 @@ export default {
         {display: "No Max", value: 100000},
       ],
       maxPlayTime: {display: "No Max", value: 100000},
-      drawnObject: null
+      drawnObject: null,
+      alert: null
     }
   },
   computed: {
@@ -123,6 +127,16 @@ export default {
     }
   },
   methods: {
+    showAlert (message, allertClass, timer) {
+      this.alert = {
+        message: message,
+        class: allertClass
+      };
+
+      setTimeout(() => {
+        this.alert = null
+      }, timer || 3000);
+    },
     async drawGame() {
       const games = await this.loadHat();
       const filteredGames = this.filteredGames(games);
@@ -133,7 +147,7 @@ export default {
 
         this.removeGameFromHat(randomGame);
       } else {
-        console.log("No games in the hat matching filters");
+        this.showAlert("No games in the hat matching filters", "alert-danger");
         return 'Error Loading Game Title';
       }
     },
