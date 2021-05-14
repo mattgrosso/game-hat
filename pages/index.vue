@@ -64,17 +64,22 @@ export default {
     switchingHats (newVal) {
       if (newVal) {
         this.$nextTick(() => {
-          this.$refs.bggUserInput.focus();
+          this.$refs.bggUserTitleInput.focus();
         });
       }
     }
   },
   methods: {
     handleKeyup($event, test) {
-      if ($event.key == "Enter") {
+      const key = $event.key;
+      
+      if (key == "Enter") {
         this.switchingHats = false;
         this.showUsernamePrompt = false;
         this.saveBGGUser(test);
+      } else if (key == "Escape") {
+        this.switchingHats = false;
+        this.showUsernamePrompt = false;
       }
     },
     saveBGGUser (inputElement) {
