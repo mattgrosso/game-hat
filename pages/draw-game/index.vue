@@ -93,18 +93,14 @@ export default {
   name: "draw-game",
   middleware: ['check-auth', 'auth'],
   async mounted() {
-    const users = await this.loadUsers();
-    this.users = users;
-    this.selectedUsers.push({ email: this.$store.state.email });
+    if (!this.$store.state.bggUsername) {
+      console.error('no bggUsername in store');
 
-    if (process.client) {
-      const bggUser = this.$store.getters.localStorageBGGUsername;
-      this.$store.commit("setBGGUser", bggUser);
-
-      if (!this.$store.state.bggUsername) {
-        console.error('no bggUsername in store');
-        this.$router.push('/');
-      }
+      this.$router.push('/');
+    } else {
+      const users = await this.loadUsers();
+      this.users = users;
+      this.selectedUsers.push({ email: this.$store.state.email });
     }
   },
   data() {

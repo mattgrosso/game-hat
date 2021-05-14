@@ -100,8 +100,9 @@ export default {
       };
 
       await this.$store.dispatch('authenticateUser', config);
+      const localStorageUsername = JSON.parse(localStorage.getItem('game-hat-bgg-username'));
 
-      if (this.$store.getters.isAuthenticated) {
+      if (localStorageUsername) {
         await this.addUser({ name: this.name, email: this.email });
 
         const path = this.$route.query.path || '/'

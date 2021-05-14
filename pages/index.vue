@@ -3,10 +3,10 @@
     <div v-if="!showUsernamePrompt && bggUser" class="content">
       <div class="title my-5 col-12 justify-content-center align-items-center">
         <div v-show="!switchingHats" class="h3 my-2">{{bggUser}}'s</div>
-        <div v-show="switchingHats" class="input-group col-8 mx-auto my-2" @keyup="handleKeyup">
-          <input type="text" class="form-control" ref="bggUserInput" v-model="bggUser">
+        <div v-show="switchingHats" class="input-group col-8 mx-auto my-2" @keyup="handleKeyup($event, 'bggUserTitleInput')">
+          <input type="text" class="form-control" ref="bggUserTitleInput">
           <span class="input-group-append">
-            <button class="btn btn-success" type="button" @click="switchingHats = false">
+            <button class="btn btn-success" type="button" @click="saveBGGUser($event, 'bggUserTitleInput')">
               <font-awesome-icon class="button-icon" icon="check-circle"/>
             </button>
           </span>
@@ -28,9 +28,9 @@
     </div>
     <div v-if="showUsernamePrompt" class="username-prompt">
       <h2 class="mb-2">Who's hat do you want to use?</h2>
-      <div class="input-group" @keyup="handleKeyup">
-        <input type="text" class="form-control" v-model="bggUser" placeholder="BGG Username">
-        <button class="btn btn-primary">Go</button>
+      <div class="input-group" @keyup="handleKeyup($event, 'bggUserPromptInput')">
+        <input type="text" class="form-control" ref="bggUserPromptInput" placeholder="BGG Username">
+        <button class="btn btn-primary" @click="saveBGGUser($event, 'bggUserPromptInput')">Go</button>
       </div>
     </div>
   </div>
@@ -40,7 +40,7 @@
 export default {
   name: "game-hat-index",
   mounted() {
-    this.bggUser = this.$store.getters.localStorageBGGUsername || this.$route.query.username;
+    this.bggUser = JSON.parse(localStorage.getItem('game-hat-bgg-username')) || this.$route.query.username;
 
     if (this.bggUser) {
       this.$store.commit("setBGGUser", this.bggUser);
@@ -50,14 +50,16 @@ export default {
   },
   data() {
    return {
-     bggUser: this.$store.state.bggUsername,
+     bggUser: null,
      switchingHats: false,
      showUsernamePrompt: false
    }
   },
   watch: {
     bggUser (newVal) {
-      this.$store.commit("setBGGUser", newVal);
+      if (newVal) {
+        this.$store.commit("setBGGUser", newVal);
+      }
     },
     switchingHats (newVal) {
       if (newVal) {
@@ -68,11 +70,15 @@ export default {
     }
   },
   methods: {
-    handleKeyup($event) {
-      if ($event.key == "Enter" && this.bggUser) {
+    handleKeyup($event, test) {
+      if ($event.key == "Enter") {
         this.switchingHats = false;
         this.showUsernamePrompt = false;
+        this.saveBGGUser(test);
       }
+    },
+    saveBGGUser (inputElement) {
+      this.bggUser = this.$refs[inputElement].value;
     }
   },
 }

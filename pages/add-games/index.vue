@@ -121,7 +121,7 @@ export default {
   name: 'add-games',
   middleware: ['check-auth', 'auth'],
   async mounted() {
-    const bggUser = this.$store.getters.localStorageBGGUsername;
+    const bggUser = JSON.parse(localStorage.getItem('game-hat-bgg-username'));
 
     if (!this.$store.state.bggUsername) {
       console.error('no bggUsername in store');

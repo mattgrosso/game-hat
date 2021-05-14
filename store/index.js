@@ -91,13 +91,6 @@ const createStore = () => {
     getters: {
       isAuthenticated(state) {
         return state.token != null;
-      },
-      localStorageBGGUsername (state) {
-        try {
-          return JSON.parse(localStorage.getItem('game-hat-bgg-username'));
-        } catch (error) {
-          return undefined;
-        }
       }
     },
     mutations: {
