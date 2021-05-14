@@ -68,6 +68,10 @@ export default {
     'bootstrap-vue/nuxt'
   ],
 
+  bootstrapVue: {
+    icons: false  
+  },
+
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {
     proxy: false,
@@ -80,5 +84,11 @@ export default {
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
     transpile: [/@code-bucket.*/], // transpile ESM modules within all fullcalendar packages
+    babel: {
+      plugins: [
+        ['@babel/plugin-proposal-private-methods', { loose: true }]
+      ],
+      compact: true
+    }
   },
 };

@@ -180,7 +180,7 @@ const createStore = () => {
           token = tokenCookie.split('=')[1];
           email = tokenEmail.split('=')[1];
           tokenExpiration = expirationCookie.split('=')[1];
-        } else {
+        } else if (process.client) {
           token = localStorage.getItem('game-hat-token');
           email = localStorage.getItem('game-hat-email');
           tokenExpiration = localStorage.getItem('game-hat-token-expiration');
