@@ -32,13 +32,16 @@
           placeholder="Password"
         >
       </div>
-      <button type="submit" class="btn btn-primary my-2">Submit</button>
-      <button
-        class="btn btn-secondary btn-secondary my-2"
+      <button type="submit" class="btn btn-primary btn-block my-2">
+        <span v-if="isLogin">Login</span>
+        <span v-if="!isLogin">Sign Up</span>
+      </button>
+      <a
+        class="my-2"
         @click.prevent="isLogin = !isLogin"
       >
-        {{ isLogin ? "Create account" : "Sign in" }}
-      </button>
+        {{ isLogin ? "Create an account instead" : "Log in instead" }}
+      </a>
     </form>
     <!-- <button class="btn btn-danger" @click="googleSignIn">
       Click Here

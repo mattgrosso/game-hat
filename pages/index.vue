@@ -39,6 +39,7 @@
 <script>
 export default {
   name: "game-hat-index",
+  middleware: ['check-auth', 'auth'],
   mounted() {
     this.bggUser = JSON.parse(localStorage.getItem('game-hat-bgg-username')) || this.$route.query.username;
 

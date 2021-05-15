@@ -187,7 +187,7 @@ const createStore = () => {
         }
 
         if (new Date().getTime() > +tokenExpiration || !token) {
-          vuexContext.commit('clearToken');
+          vuexContext.commit("clearToken");
           vuexContext.commit("clearEmail");
           vuexContext.commit("clearTokenExpiration");
         }
