@@ -350,7 +350,8 @@ export default {
 
           setTimeout(() => {
             this.checked = false;
-          }, 2000);
+            this.clearSelection();
+          }, 1500);
         } else {
           console.log('post: ', post);
         }
