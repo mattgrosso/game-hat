@@ -36,12 +36,12 @@
         <span v-if="isLogin">Login</span>
         <span v-if="!isLogin">Sign Up</span>
       </button>
-      <a
-        class="my-2"
+      <button
+        class="btn btn-link my-2"
         @click.prevent="isLogin = !isLogin"
       >
         {{ isLogin ? "Create an account instead" : "Log in instead" }}
-      </a>
+      </button>
     </form>
     <!-- <button class="btn btn-danger" @click="googleSignIn">
       Click Here

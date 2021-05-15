@@ -18,14 +18,14 @@
         </button>
       </nuxt-link>
       <div class="filters bg-dark col-12 col-md-11 pt-4 pt-md-0 d-md-flex" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
-        <div class="text-filter text-white col-12 col-md-4">
+        <div class="text-filter text-white col-12 col-md-3">
           <input id="filter-input" class="col-12" v-model="filterText" type="text" placeholder="search"/>
           <span v-if="collection">
             {{ filteredCollection.length }} / {{ collection.length }}
           </span>
         </div>
-        <div class="button-group col-12 col-md-6 p-3 py-md-0 d-md-flex justify-content-end">
-          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
+        <div class="button-group col-12 col-md-7 p-3 py-md-0 d-md-flex justify-content-end">
+          <div class="col-12 col-md-2 py-1 px-0 py-md-0 px-md-1 d-flex justify-content-center align-items-center">
             <button
               class="shuffle btn btn-info btn-block"
               @click="shuffleOrder"
@@ -33,7 +33,7 @@
               Shuffle
             </button>
           </div>
-          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
+          <div class="col-12 col-md-2 py-1 px-0 py-md-0 px-md-1 d-flex justify-content-center align-items-center">
             <button
               class="alphabetize btn btn-info btn-block"
               @click="alphabetizeOrder"
@@ -41,7 +41,7 @@
               A-Z
             </button>
           </div>
-          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
+          <div class="col-12 col-md-2 py-1 px-0 py-md-0 px-md-1 d-flex justify-content-center align-items-center">
             <button
               class="chronological btn btn-info btn-block"
               @click="chronologicalOrder"
@@ -49,12 +49,21 @@
               Recent
             </button>
           </div>
-          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1">
+          <div class="col-12 col-md-2 py-1 px-0 py-md-0 px-md-1 d-flex justify-content-center align-items-center">
             <button
               class="random btn btn-info btn-block"
               @click="scrollToRandom"
             >
               Random
+            </button>
+          </div>
+          <div class="col-12 col-md-3 py-1 px-0 py-md-0 px-md-1 d-flex justify-content-center align-items-center">
+            <button
+              class="my-picks btn btn-block"
+              :class="justMyPicks ? 'btn-light' : 'btn-info'"
+              @click="myPicks"
+            >
+              My Picks
             </button>
           </div>
         </div>
@@ -146,7 +155,8 @@ export default {
      showFilters: true,
      loading: false,
      checked: false,
-     alert: null
+     alert: null,
+     justMyPicks: false
    }
   },
   watch: {
@@ -293,6 +303,23 @@ export default {
 
       this.$scrollTo(randomRef, 500, options);
     },
+    async myPicks () {
+      this.hideFilters();
+      if (this.justMyPicks) {
+        this.resetMyPicks();
+      } else {
+        this.justMyPicks = true;
+        const hat = await this.loadHat();
+        const myHat = hat.filter((obj) => obj.user.email == this.$store.state.email).map((obj) => obj.game.id);
+        this.collection = this.collection.filter((game) => {
+          return myHat.indexOf(parseInt(game.attributes.objectId)) > -1;
+        })
+      }
+    },
+    async resetMyPicks () {
+      this.justMyPicks = false;
+      this.collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
+    },
     showAlert (message, alertClass, timer) {
       this.alert = {
         message: message,
@@ -377,7 +404,28 @@ export default {
       }
       
       return `${count} ${players}`
-    }
+    },
+    async loadHat() {
+      const resp = await this.$axios.get(
+        `https://game-hat-default-rtdb.firebaseio.com/game-hats/${this.$store.state.bggUsername}.json`
+      );
+
+      if (resp.statusText == 'OK') {
+        let games = [];
+
+        if (resp.data) {
+          games = Object.keys(resp.data).map((key) => {
+            const game = { ...resp.data[key], id: key };
+            return game;
+          });
+        }
+
+        return games;
+      } else {
+        console.log(resp);
+        return [];
+      }
+    },
   },
 }
 </script>
