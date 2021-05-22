@@ -94,10 +94,12 @@ export default {
   middleware: ['check-auth', 'auth'],
   async mounted() {
     const bggUser = JSON.parse(localStorage.getItem('game-hat-bgg-username')) || this.$route.query.username;
-
+    
     if (!bggUser) {
       this.$router.push('/');
     } else {
+      this.$store.commit("setBGGUser", bggUser);
+
       this.users = await this.loadUsers();
 
       this.selectedUsers.push({ email: this.$store.state.email });
