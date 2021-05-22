@@ -1,5 +1,5 @@
 <template>
-  <div class="sign-in-form">
+  <div class="auth-form">
     <form @submit.prevent="onSubmit" class="col-12 col-md-6 mx-auto my-4">
       <div v-show="!isLogin" class="form-group">
         <label for="input-name">Name</label>
@@ -7,8 +7,10 @@
           type="text"
           v-model="name"
           class="form-control"
+          :class="!nameIsUnique ? 'not-unique' : 'unique'"
           id="input-name"
           placeholder="Name"
+          required
         >
       </div>
       <div class="form-group">
@@ -20,6 +22,7 @@
           id="input-email"
           aria-describedby="emailHelp"
           placeholder="Enter email"
+          required
         >
       </div>
       <div class="form-group">
@@ -30,6 +33,7 @@
           class="form-control"
           id="input-password"
           placeholder="Password"
+          required
         >
       </div>
       <button type="submit" class="btn btn-primary btn-block my-2">
@@ -57,13 +61,20 @@ export default {
   },
   data() {
    return {
-     isLogin: false,
-     name: "Matt",
+     isLogin: true,
+     name: "",
      email: "",
      password: "",
      alert: null,
-     users: null
+     users: []
    }
+  },
+  computed: {
+    nameIsUnique () {
+      const names = this.users.map((user) => user.name);
+
+      return !names.includes(this.name);
+    }
   },
   methods: {
     async loadUsers() {
@@ -89,6 +100,12 @@ export default {
       }
     },
     async onSubmit() {
+      if (!isLogin && !this.nameIsUnique) {
+        this.showAlert("That name is in use. Please choose a unique name. (Maybe add a second initial)", "alert-warning", 8000);
+
+        return;
+      }
+
       const config = {
         isLogin: this.isLogin,
         email: this.email,
@@ -146,6 +163,10 @@ export default {
 }
 </script>
 
-<style>
-
+<style lang="scss">
+.auth-form {
+  #input-name.not-unique {
+    border-color: red;
+  }
+}
 </style>
