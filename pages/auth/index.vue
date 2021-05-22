@@ -43,58 +43,51 @@
         {{ isLogin ? "Create an account instead" : "Log in instead" }}
       </button>
     </form>
-    <!-- <button class="btn btn-danger" @click="googleSignIn">
-      Click Here
-    </button> -->
+    <div v-if="alert" class="alert col-12 mx-auto m-0" :class="alert ? alert.class : ''">
+      {{ alert.message }}
+    </div>
   </div>
 </template>
 
 <script>
-// import firebase from 'firebase';
-// import Cookie from 'js-cookie';
-
 export default {
   name: "Login",
+  async mounted() {
+    await this.loadUsers();
+  },
   data() {
    return {
-     isLogin: true,
-     name: "",
+     isLogin: false,
+     name: "Matt",
      email: "",
      password: "",
-    //  provider: null
+     alert: null,
+     users: null
    }
   },
   methods: {
-    // async googleSignIn () {
-    //   this.provider = new firebase.auth.GoogleAuthProvider();
-    //   try {
-    //     const auth = await firebase.auth().signInWithPopup(this.provider);
-    //     console.log('auth: ', auth);
-    //     this.$store.commit('setToken', auth.credential.accessToken);
-    //     this.$store.commit('setEmail', auth.additionalUserInfo.profile.email);
-    //     this.$store.commit('setTokenExpiration', new Date().getTime() + 1000000000000);
+    async loadUsers() {
+      const resp = await this.$axios.get(
+        `https://game-hat-default-rtdb.firebaseio.com/users.json`
+      );
 
-    //     localStorage.setItem('game-hat-token', auth.credential.accessToken);
-    //     localStorage.setItem('game-hat-email', auth.additionalUserInfo.profile.email);
-    //     localStorage.setItem('game-hat-token-expiration', new Date().getTime() + 1000000000000);
+      if (resp.statusText == 'OK') {
+        let users = [];
 
-    //     Cookie.set('game-hat-token', auth.credential.accessToken);
-    //     Cookie.set('game-hat-email', auth.additionalUserInfo.profile.email);
-    //     Cookie.set('game-hat-token-expiration', new Date().getTime() + 1000000000000);
+        if (resp.data) {
+          users = Object.keys(resp.data).map((key) => {
+            const user = { ...resp.data[key], id: key };
+            return user;
+          });
+        }
 
-    //     await this.addUser({
-    //       name: auth.additionalUserInfo.profile.given_name,
-    //       email: auth.additionalUserInfo.profile.email
-    //     });
-
-    //     const path = this.$route.query.path || '/'
-    //     this.$router.push(path);
-    //   } catch (error) {
-    //     console.log('error: ', error);
-    //     // One likely error here is that an email is already in use (the person already has an account)
-    //   }
-      
-    // },
+        this.users = users;
+        return users;
+      } else {
+        console.log(resp);
+        return [];
+      }
+    },
     async onSubmit() {
       const config = {
         isLogin: this.isLogin,
@@ -102,16 +95,28 @@ export default {
         password: this.password
       };
 
-      await this.$store.dispatch('authenticateUser', config);
-      const localStorageUsername = JSON.parse(localStorage.getItem('game-hat-bgg-username'));
+      const authUser = await this.$store.dispatch('authenticateUser', config);
 
-      if (localStorageUsername) {
-        await this.addUser({ name: this.name, email: this.email });
+      if (authUser.email) {
+        const userEmails = this.users.map((user) => user.email);
 
+        if (!userEmails.includes(authUser.email)) {
+          await this.addUser({ name: this.name, email: this.email });
+        }
+  
         const path = this.$route.query.path || '/'
         this.$router.push(path);
       } else {
-        // One likely error here is that an email is already in use (the person already has an account)
+        try {
+          if (authUser.response.data.error.message == "EMAIL_EXISTS") {
+            this.showAlert("Email already has account", "alert-danger");
+          } else {
+            this.showAlert(`${authUser.response.status} - ${authUser.response.data.error.message}`, "alert-danger", 10000);
+          }
+        } catch (error) {
+          this.showAlert(`There was an error we didn't handle: ${error}`, "alert-danger")
+          console.log('error.response: ', error.response);
+        }
       }
     },
     async addUser(user) {
@@ -123,8 +128,19 @@ export default {
       if (post.statusText == 'OK') {
         console.error('Logged In');
       } else {
+        console.error('post.statusText is not OK');
         console.log('post: ', post);
       }
+    },
+    showAlert (message, alertClass, timer) {
+      this.alert = {
+        message: message,
+        class: alertClass
+      };
+
+      setTimeout(() => {
+        this.alert = null
+      }, timer || 3000);
     },
   },
 }
