@@ -272,7 +272,7 @@ export default {
       return maxBy(poll.results, (result) => parseInt(result.best)).numPlayers;
     },
     parsedAddedDate(game) {
-      const date = new Date(game.status.modified);
+      const date = new Date(game.status.modified.split(" ")[0]);
       const options = { year: 'numeric', month: 'long', day: 'numeric' };
       return date.toLocaleDateString(undefined, options);
     },
