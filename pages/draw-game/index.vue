@@ -93,13 +93,13 @@ export default {
   name: "draw-game",
   middleware: ['check-auth', 'auth'],
   async mounted() {
-    if (!this.$store.state.bggUsername) {
-      console.error('no bggUsername in store');
+    const bggUser = JSON.parse(localStorage.getItem('game-hat-bgg-username')) || this.$route.query.username;
 
+    if (!bggUser) {
       this.$router.push('/');
     } else {
-      const users = await this.loadUsers();
-      this.users = users;
+      this.users = await this.loadUsers();
+
       this.selectedUsers.push({ email: this.$store.state.email });
     }
   },

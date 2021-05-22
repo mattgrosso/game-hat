@@ -95,13 +95,13 @@ export default {
     saveBGGUser (inputElement) {
       try {
         const inputValue = this.$refs[inputElement].value;
-        cleanBGGUser = inputValue.replace(/[" ']/gm, "").toLowerCase();
+        const cleanBGGUser = inputValue.replace(/[" ']/gm, "").toLowerCase();
         this.bggUser = cleanBGGUser;
         this.switchingHats = false;
         this.showUsernamePrompt = false;
       } catch (error) {
         console.log("BGG User input failed");
-        console.log('error: ', error.response);
+        console.log('error: ', error);
       }
     }
   },

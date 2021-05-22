@@ -143,9 +143,9 @@ export default {
       );
 
       if (post.statusText == 'OK') {
-        console.error('Logged In');
+        console.log('Logged In');
       } else {
-        console.error('post.statusText is not OK');
+        console.log('post.statusText is not OK');
         console.log('post: ', post);
       }
     },

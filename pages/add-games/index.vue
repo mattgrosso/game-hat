@@ -72,7 +72,7 @@
         </div>
       </div>
     </div>
-    <ul v-if="filteredCollection" class="game-shelf" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
+    <ul v-if="!loadingCollection && filteredCollection" class="game-shelf" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
       <li 
         v-for="game in filteredCollection"
         :key="game.attributes.objectId"
@@ -120,6 +120,15 @@
         </b-popover>
       </li>
     </ul>
+    <div v-if="loadingCollection" class="collection-loading">
+      <div 
+        class="button-icon spinner-grow text-info" 
+        :class="showFilters ? 'filters-visible' : 'filters-hidden'" 
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -130,16 +139,20 @@ export default {
   name: 'add-games',
   middleware: ['check-auth', 'auth'],
   async mounted() {
-    const bggUser = JSON.parse(localStorage.getItem('game-hat-bgg-username'));
+    const bggUser = JSON.parse(localStorage.getItem('game-hat-bgg-username')) || this.$route.query.username;
 
-    if (!this.$store.state.bggUsername) {
-      console.error('no bggUsername in store');
-
+    if (!bggUser) {
       this.$router.push('/');
     } else {
+      this.$store.commit("setBGGUser", bggUser);
+
+      this.loadingCollection = true;
+
       const collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
       this.collection = collection;
-  
+      
+      this.loadingCollection = false;
+
       window.addEventListener('scroll', this.handleScroll);
     }
   },
@@ -154,6 +167,7 @@ export default {
      selectedGame: null,
      showFilters: true,
      loading: false,
+     loadingCollection: false,
      checked: false,
      alert: null,
      justMyPicks: false
@@ -526,6 +540,26 @@ export default {
 
         @media screen and (min-width: 576px) {
           max-height: 200px;
+        }
+      }
+    }
+  }
+
+  .collection-loading {
+    align-items: center;
+    display: flex;
+    height: 80vh;
+    justify-content: center;
+
+    .button-icon {
+      height: 50px;
+      width: 50px;
+
+      &.filters-visible {
+        margin-top: 450px;
+
+        @media screen and (min-width: 768px) {
+          margin: 0;
         }
       }
     }
