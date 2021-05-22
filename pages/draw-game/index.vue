@@ -242,7 +242,11 @@ export default {
       }
     },
     inPlayerCountRange (game, count) {
-      return count >= game.minplayers && count <= game.maxplayers;
+      if (!this.goodWith(game).length) {
+        return count >= game.minplayers && count <= game.maxplayers;
+      } else {
+        return this.goodWith(game).includes(`${count}`);
+      }
     },
     averagePlayTime (game) {
       return (game.maxplaytime + game.minplaytime) / 2;
@@ -253,6 +257,36 @@ export default {
       const lengthFiltered = playerCountFiltered.filter((gameObj) => this.averagePlayTime(gameObj.game) <= this.maxPlayTime.value);
 
       return lengthFiltered;
+    },
+    playerCountPoll (game) {
+      const poll = game.polls.find((poll) => poll.name === "suggested_numplayers");
+
+      if (!poll.totalvotes) {
+        return;
+      }
+
+      return {
+        totalVotes: poll.totalvotes,
+        results: poll.results.map((result) => {
+          return {
+            numPlayers: result._attributes.numplayers,
+            best: result.result.find((r) => r._attributes.value == "Best")._attributes.numvotes,
+            recommended: result.result.find((r) => r._attributes.value == "Recommended")._attributes.numvotes,
+            notRecommended: result.result.find((r) => r._attributes.value == "Not Recommended")._attributes.numvotes,
+          }
+        })
+      }
+    },
+    goodWith (game) {
+      const poll = this.playerCountPoll(game);
+
+      if (!poll) {
+        return [];
+      }
+
+      return poll.results.filter((result) => {
+        return (parseInt(result.best) + parseInt(result.recommended)) > parseInt(result.notRecommended)
+      }).map((result) => result.numPlayers);
     },
     userSelectedIndex (user) {
       const userSelectedIndex = this.selectedUsers.findIndex((u) => u.email == user.email);
