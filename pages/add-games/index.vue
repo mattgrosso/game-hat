@@ -165,7 +165,7 @@ export default {
      filterText: "",
      selectedGameId: null,
      selectedGame: null,
-     showFilters: true,
+     showFilters: false,
      loading: false,
      loadingCollection: false,
      checked: false,
@@ -361,6 +361,12 @@ export default {
         if (duplicateGame) {
           this.loading = false;
           this.showAlert("Already in hat", "alert-warning", 2000)
+          
+          setTimeout(() => {
+            this.checked = false;
+            this.clearSelection();
+          }, 1500);
+
           return;
         }        
       }

@@ -111,7 +111,7 @@ export default {
 <style lang="scss">
 .game-hat {
   margin: 0 auto;
-  min-height: 100vh;
+  min-height: 75vh;
   display: flex;
   justify-content: center;
   align-items: center;
