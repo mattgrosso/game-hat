@@ -6,7 +6,7 @@
         <div v-show="switchingHats" class="input-group col-8 mx-auto my-2" @keyup="handleKeyup($event, 'bggUserTitleInput')">
           <input type="text" class="form-control" ref="bggUserTitleInput">
           <span class="input-group-append">
-            <button class="btn btn-success" type="button" @click="saveBGGUser($event, 'bggUserTitleInput')">
+            <button class="btn btn-success" type="button" @click="saveBGGUser('bggUserTitleInput')">
               <font-awesome-icon class="button-icon" icon="check-circle"/>
             </button>
           </span>
@@ -30,9 +30,13 @@
       <h2 class="mb-2">Who's hat do you want to use?</h2>
       <div class="input-group" @keyup="handleKeyup($event, 'bggUserPromptInput')">
         <input type="text" class="form-control" ref="bggUserPromptInput" placeholder="BGG Username">
-        <button class="btn btn-primary" @click="saveBGGUser($event, 'bggUserPromptInput')">Go</button>
+        <button class="btn btn-primary" @click="saveBGGUser('bggUserPromptInput')">Go</button>
       </div>
     </div>
+    <!-- <div class="delete-node-tool">
+      <input ref="delete" type="text">
+      <button @click="deleteNode">Delete</button>
+    </div> -->
   </div>
 </template>
 
@@ -71,20 +75,34 @@ export default {
     }
   },
   methods: {
-    handleKeyup($event, test) {
+    async deleteNode () {
+      const deletePost = await this.$axios.delete(
+        `https://game-hat-default-rtdb.firebaseio.com/${this.$refs.delete.value}.json?auth=${this.$store.state.token}`
+      );
+
+      console.log('deletePost: ', deletePost);
+    },
+    handleKeyup($event, inputElement) {
       const key = $event.key;
       
       if (key == "Enter") {
-        this.switchingHats = false;
-        this.showUsernamePrompt = false;
-        this.saveBGGUser(test);
+        this.saveBGGUser(inputElement);
       } else if (key == "Escape") {
         this.switchingHats = false;
         this.showUsernamePrompt = false;
       }
     },
     saveBGGUser (inputElement) {
-      this.bggUser = this.$refs[inputElement].value;
+      try {
+        const inputValue = this.$refs[inputElement].value;
+        cleanBGGUser = inputValue.replace(/[" ']/gm, "").toLowerCase();
+        this.bggUser = cleanBGGUser;
+        this.switchingHats = false;
+        this.showUsernamePrompt = false;
+      } catch (error) {
+        console.log("BGG User input failed");
+        console.log('error: ', error.response);
+      }
     }
   },
 }
