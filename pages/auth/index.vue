@@ -10,7 +10,7 @@
           :class="!nameIsUnique ? 'not-unique' : 'unique'"
           id="input-name"
           placeholder="Name"
-          required
+          :required="!isLogin"
         >
       </div>
       <div class="form-group">
@@ -100,7 +100,7 @@ export default {
       }
     },
     async onSubmit() {
-      if (!isLogin && !this.nameIsUnique) {
+      if (!this.isLogin && !this.nameIsUnique) {
         this.showAlert("That name is in use. Please choose a unique name. (Maybe add a second initial)", "alert-warning", 8000);
 
         return;
