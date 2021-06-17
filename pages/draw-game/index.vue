@@ -101,6 +101,7 @@ export default {
       this.$store.commit("setBGGUser", bggUser);
 
       this.users = await this.loadUsers();
+      this.collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
 
       this.selectedUsers.push({ email: this.$store.state.email });
     }
@@ -108,6 +109,7 @@ export default {
   data() {
     return {
       users: [],
+      collection: [],
       selectedUsers: [],
       playerCounts: [
         {display: "1", value: 1},
@@ -142,7 +144,10 @@ export default {
       return `${Math.floor(
         (Date.now() - this.drawnObject.timeStamp) / 1000 / 60 / 60 / 24
       )} days ago`;
-    }
+    },
+    collectionIds () {
+      return this.collection.map((gameObj) => parseInt(gameObj.attributes.objectId));
+    },
   },
   methods: {
     showAlert (message, alertClass, timer) {
@@ -254,7 +259,8 @@ export default {
       return (game.maxplaytime + game.minplaytime) / 2;
     },
     filteredGames (games) {
-      const userFiltered = games.filter((gameObj) => this.userSelectedIndex(gameObj.user) !== false);
+      const inCollection = games.filter((gameObj) => this.collectionIds.indexOf(gameObj.game.id) > -1);
+      const userFiltered = inCollection.filter((gameObj) => this.userSelectedIndex(gameObj.user) !== false);
       const playerCountFiltered = userFiltered.filter((gameObj) => this.inPlayerCountRange(gameObj.game, this.selectedPlayerCount.value));
       const lengthFiltered = playerCountFiltered.filter((gameObj) => this.averagePlayTime(gameObj.game) <= this.maxPlayTime.value);
 
