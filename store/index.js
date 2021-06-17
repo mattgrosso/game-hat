@@ -187,14 +187,12 @@ const createStore = () => {
         }
 
         if (new Date().getTime() > +tokenExpiration || !token) {
-          vuexContext.commit("clearToken");
-          vuexContext.commit("clearEmail");
-          vuexContext.commit("clearTokenExpiration");
+          this.dispatch('logout');
+        } else {
+          vuexContext.commit('setToken', token);
+          vuexContext.commit('setEmail', email);
+          vuexContext.commit('setTokenExpiration', tokenExpiration);
         }
-
-        vuexContext.commit('setToken', token);
-        vuexContext.commit('setEmail', email);
-        vuexContext.commit('setTokenExpiration', tokenExpiration);
       },
       logout (vuexContext) {
         vuexContext.commit("clearToken");

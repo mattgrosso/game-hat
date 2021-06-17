@@ -72,7 +72,7 @@
         </div>
       </div>
     </div>
-    <ul v-if="!loadingCollection && filteredCollection" class="game-shelf" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
+    <ul v-if="!loadingCollection && filteredCollection.length" class="game-shelf" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
       <li 
         v-for="game in filteredCollection"
         :key="game.attributes.objectId"
@@ -127,6 +127,13 @@
         role="status"
       >
         <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div v-if="!loadingCollection && !filteredCollection.length" class="collection-failed">
+      <div class="reload-wrapper">
+        <p class="col-8 mx-auto">It seems like there should be something here...</p>
+        <p class="col-8 mx-auto">Maybe try reloading?</p>
+        <button class="col-8 mx-auto btn btn-block btn-success" @click="reload">Reload</button>
       </div>
     </div>
   </div>
@@ -197,6 +204,9 @@ export default {
     }
   },
   methods: {
+    reload () {
+      window.location.reload();
+    },
     hideFilters () {
       this.showFilters = false;
     },
@@ -551,7 +561,8 @@ export default {
     }
   }
 
-  .collection-loading {
+  .collection-loading,
+  .collection-failed {
     align-items: center;
     display: flex;
     height: 80vh;
