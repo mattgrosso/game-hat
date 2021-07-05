@@ -146,7 +146,11 @@ export default {
       )} days ago`;
     },
     collectionIds () {
-      return this.collection.map((gameObj) => parseInt(gameObj.attributes.objectId));
+      if (this.collection) {
+        return this.collection.map((gameObj) => parseInt(gameObj.attributes.objectId));
+      } else {
+        return [];
+      }
     },
   },
   methods: {
