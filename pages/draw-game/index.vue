@@ -164,9 +164,17 @@ export default {
         this.alert = null
       }, timer || 3000);
     },
+    async logError(label, string) {
+      const post = await this.$axios.post(
+        `https://game-hat-default-rtdb.firebaseio.com/error-log/${Date.now()}/${label}.json?auth=${this.$store.state.token}`,
+        string
+      );        
+    },
     async drawGame() {
       const games = await this.loadHat();
       const filteredGames = this.filteredGames(games);
+      this.logError('games-length', JSON.stringify(games.length));
+      this.logError('filtered-games-length', JSON.stringify(filteredGames.length));
 
       if (filteredGames.length) {
         const randomGame = sample(filteredGames);
