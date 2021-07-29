@@ -75,6 +75,15 @@
       <div v-if="alert" class="alert col-10 col-md-6 p-3 mx-auto" :class="alert ? alert.class : ''">
         {{ alert.message }}
       </div>
+      <div v-if="this.filterSteps.length" class="filters-debugger bg-dark text-light text-right px-2">
+        <font-awesome-icon v-if="!showDebugger" icon="plus" @click="toggleDebugger"/>
+        <font-awesome-icon v-if="showDebugger" icon="minus" @click="toggleDebugger"/>
+        <ul ref="debugger" class="list-unstyled collapse">
+          <li v-for="(filterStep, index) in filterSteps" :key="index">
+            <p>{{filterStep.name}} {{filterStep.length}} games.</p>
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="content p-2">
       <div v-if="drawnObject" class="drawn-game px-3">
@@ -133,7 +142,9 @@ export default {
       ],
       maxPlayTime: {display: "No Max", value: 100000},
       drawnObject: null,
-      alert: null
+      alert: null,
+      filterSteps: [],
+      showDebugger: false
     }
   },
   computed: {
@@ -172,9 +183,7 @@ export default {
     },
     async drawGame() {
       const games = await this.loadHat();
-      const filteredGames = this.filteredGames(games);
-      this.logError('games-length', JSON.stringify(games.length));
-      this.logError('filtered-games-length', JSON.stringify(filteredGames.length));
+      const filteredGames = this.filteredGames(games)["Based on the play time selected there are "];
 
       if (filteredGames.length) {
         const randomGame = sample(filteredGames);
@@ -182,6 +191,7 @@ export default {
 
         this.removeGameFromHat(randomGame);
       } else {
+        this.logError('filtered-games', JSON.stringify(filteredGames));
         this.showAlert("No games in the hat matching filters", "alert-danger");
         return 'Error Loading Game Title';
       }
@@ -276,7 +286,22 @@ export default {
       const playerCountFiltered = userFiltered.filter((gameObj) => this.inPlayerCountRange(gameObj.game, this.selectedPlayerCount.value));
       const lengthFiltered = playerCountFiltered.filter((gameObj) => this.averagePlayTime(gameObj.game) <= this.maxPlayTime.value);
 
-      return lengthFiltered;
+      const filterSteps = {
+        "We started with ": games,
+        "Filtering out games not in the collection left ": inCollection,
+        "Only allowing games added by current users left ": userFiltered,
+        "Based on the number of players there are ": playerCountFiltered,
+        "Based on the play time selected there are ": lengthFiltered
+      };
+
+      this.filterSteps = Object.keys(filterSteps).map((step) => {
+        return {
+          name: step,
+          length: filterSteps[step].length,
+          games: filterSteps[step]
+        }
+      });
+      return filterSteps;
     },
     playerCountPoll (game) {
       const poll = game.polls.find((poll) => poll.name === "suggested_numplayers");
@@ -331,6 +356,10 @@ export default {
     },
     setMaxPlayTime (playTime) {
       this.maxPlayTime = playTime;
+    },
+    toggleDebugger() {
+      this.showDebugger = !this.showDebugger;
+      this.$refs.debugger.classList.toggle('show');
     }
   },
 }
@@ -353,6 +382,12 @@ export default {
 
         li {
           cursor: pointer;
+        }
+      }
+
+      .filters-debugger {
+        p {
+          font-size: 12px;
         }
       }
     }
