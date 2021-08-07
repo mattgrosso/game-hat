@@ -110,7 +110,7 @@ export default {
       this.$store.commit("setBGGUser", bggUser);
 
       this.users = await this.loadUsers();
-      this.collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
+      this.fetchCollection();
 
       this.selectedUsers.push({ email: this.$store.state.email });
     }
@@ -119,6 +119,7 @@ export default {
     return {
       users: [],
       collection: [],
+      collectionAttempts: 0,
       selectedUsers: [],
       playerCounts: [
         {display: "1", value: 1},
@@ -160,11 +161,25 @@ export default {
       if (this.collection) {
         return this.collection.map((gameObj) => parseInt(gameObj.attributes.objectId));
       } else {
+        this.fetchCollection();
         return [];
       }
     },
   },
   methods: {
+    async fetchCollection () {
+      this.collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
+
+      if (this.collectionAttempts > 50) {
+        this.showAlert("Collection Not Loading", "alert-danger");
+        return this.collection;
+      } else if (!this.collection) {
+        this.collectionAttempts++;
+        this.fetchCollection();
+      } else {
+        return this.collection;
+      }
+    },
     showAlert (message, alertClass, timer) {
       this.alert = {
         message: message,
