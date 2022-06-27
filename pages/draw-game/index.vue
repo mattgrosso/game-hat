@@ -296,7 +296,14 @@ export default {
       return (game.maxplaytime + game.minplaytime) / 2;
     },
     filteredGames (games) {
-      const inCollection = games.filter((gameObj) => this.collectionIds.indexOf(gameObj.game.id) > -1);
+      let inCollection;
+
+      if (this.collectionIds.length) {
+        inCollection = games.filter((gameObj) => this.collectionIds.indexOf(gameObj.game.id) > -1);
+      } else {
+        inCollection = games;
+      }
+      
       const userFiltered = inCollection.filter((gameObj) => this.userSelectedIndex(gameObj.user) !== false);
       const playerCountFiltered = userFiltered.filter((gameObj) => this.inPlayerCountRange(gameObj.game, this.selectedPlayerCount.value));
       const lengthFiltered = playerCountFiltered.filter((gameObj) => this.averagePlayTime(gameObj.game) <= this.maxPlayTime.value);
@@ -306,7 +313,8 @@ export default {
         "Filtering out games not in the collection left ": inCollection,
         "Only allowing games added by current users left ": userFiltered,
         "Based on the number of players there are ": playerCountFiltered,
-        "Based on the play time selected there are ": lengthFiltered
+        "Based on the play time selected there are ": lengthFiltered,
+        "this.collectionIds": this.collectionIds
       };
 
       this.filterSteps = Object.keys(filterSteps).map((step) => {
