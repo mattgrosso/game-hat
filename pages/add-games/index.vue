@@ -3,10 +3,10 @@
     <div class="filters-wrapper bg-dark fixed-top row p-2 d-md-flex" >
       <div class="filter-menu-buttons col-2 d-md-none d-flex justify-content-start align-items-center" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
         <button v-show="showFilters" class="btn btn-info" @click="hideFilters">
-          <font-awesome-icon icon="times"/>
+          <span>x</span>
         </button>
         <button v-show="!showFilters" class="btn btn-info" @click="revealFilters">
-          <font-awesome-icon icon="bars"/>
+          <span>Menu</span>
         </button>
       </div>
       <div class="username-mobile col-8 col-md-2 text-white align-items-center font-weight-bold justify-content-center">
@@ -14,7 +14,7 @@
       </div>
       <nuxt-link class="col-2 col-md-1 d-flex justify-content-end align-items-center" to="/">
         <button class="home btn btn-info">
-          <font-awesome-icon icon="home"/>
+          <span>Home</span>
         </button>
       </nuxt-link>
       <div class="filters bg-dark col-12 col-md-11 pt-4 pt-md-0 d-md-flex" :class="showFilters ? 'filters-visible' : 'filters-hidden'">
@@ -93,7 +93,7 @@
           boundary-padding="25"
           :show="isSelected(game.attributes.objectId)"
         >
-          <font-awesome-icon @click="clearSelection" class="close-popover" icon="times"/>
+          <span @click="clearSelection" class="close-popover">X</span>
           <template #title>
             <span class="pr-4">{{ game.name }}</span>
           </template>
@@ -112,7 +112,7 @@
             <div v-if="loading" class="button-icon spinner-grow text-white" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
-            <font-awesome-icon v-if="checked" class="button-icon" icon="check-circle"/>
+            <span v-if="checked" class="button-icon">Added</span>
           </button>
           <div v-if="alert" class="alert col-12 mx-auto m-0" :class="alert ? alert.class : ''">
             {{ alert.message }}
@@ -589,7 +589,7 @@ export default {
     font-size: 20px;
     position: absolute;
     right: 12px;
-    top: 8px;
+    top: 2px;
   }
 
   .button-icon,

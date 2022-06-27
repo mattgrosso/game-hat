@@ -7,7 +7,7 @@
           <input type="text" class="form-control" ref="bggUserTitleInput">
           <span class="input-group-append">
             <button class="btn btn-success" type="button" @click="saveBGGUser('bggUserTitleInput')">
-              <font-awesome-icon class="button-icon" icon="check-circle"/>
+              <span>Ok</span>
             </button>
           </span>
         </div>

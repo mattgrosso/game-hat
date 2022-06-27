@@ -4,7 +4,7 @@
       <div class="top-nav d-flex">
         <nuxt-link class="col-8 col-md-10 d-flex justify-content-start align-items-center" to="/">
           <button class="home btn btn-info">
-            <font-awesome-icon icon="home"/>
+            <span>Home</span>
           </button>
         </nuxt-link>
         <div class="username-mobile col-4 col-md-2 text-white d-flex align-items-center justify-content-center font-weight-bold border border-white">
@@ -78,6 +78,8 @@
       <div v-if="this.filterSteps.length" class="filters-debugger bg-dark text-light text-right px-2">
         <font-awesome-icon v-if="!showDebugger" icon="plus" @click="toggleDebugger"/>
         <font-awesome-icon v-if="showDebugger" icon="minus" @click="toggleDebugger"/>
+        <span v-if="!showDebugger" @click="toggleDebugger">+</span>
+        <span v-if="showDebugger" @click="toggleDebugger">-</span>
         <ul ref="debugger" class="list-unstyled collapse">
           <li v-for="(filterStep, index) in filterSteps" :key="index">
             <p>{{filterStep.name}} {{filterStep.length}} games.</p>
