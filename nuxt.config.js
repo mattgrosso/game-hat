@@ -57,8 +57,15 @@ export default {
     '@nuxtjs/axios',
     '@nuxtjs/dotenv',
     'vue-scrollto/nuxt',
-    'bootstrap-vue/nuxt'
+    'bootstrap-vue/nuxt',
+    '@nuxtjs/fontawesome'
   ],
+
+  fontawesome: {
+    icons: {
+      solid: true
+    }
+  },
 
   bootstrapVue: {
     icons: false  
