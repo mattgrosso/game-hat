@@ -86,6 +86,9 @@
           :alt="`${game.name} Cover Image`"
           @click="selectGame(game.attributes.objectId)"
         >
+        <div v-if="alreadyInHat(game)" class="in-hat-indicator">
+          <font-awesome-icon :icon="['fas', 'check']"/>
+        </div>
         <b-popover
           :target="`popover-target-${game.attributes.objectId}`"
           placement="auto"
@@ -107,12 +110,18 @@
             <p>Added on {{ parsedAddedDate(game) }}</p>
             <p>Played {{ game.plays }} time{{game.plays === '1' ? '' : 's'}}</p>
           </div>
-          <button v-if="!alert" class="btn btn-primary" :class="buttonClass" @click="addGame(game)">
-            <span v-if="!loading && !checked">Add to Hat</span>
+          <button
+            v-if="!alert"
+            class="btn btn-primary"
+            :class="buttonClass(game)"
+            @click="addGame(game)"
+            :disabled="alreadyInHat(game)"
+          >
+            <span v-if="!loading && !alreadyInHat(game)">Add to Hat</span>
             <div v-if="loading" class="button-icon spinner-grow text-white" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
-            <span v-if="checked" class="button-icon">Added</span>
+            <span v-if="alreadyInHat(game)" class="button-icon">In Hat</span>
           </button>
           <div v-if="alert" class="alert col-12 mx-auto m-0" :class="alert ? alert.class : ''">
             {{ alert.message }}
@@ -157,6 +166,10 @@ export default {
 
       const collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
       this.collection = collection;
+
+      this.hat = await this.$axios.$get(
+        `https://game-hat-default-rtdb.firebaseio.com/game-hats/${this.$store.state.bggUsername}.json`
+      );
       
       this.loadingCollection = false;
 
@@ -177,7 +190,8 @@ export default {
      loadingCollection: false,
      checked: false,
      alert: null,
-     justMyPicks: false
+     justMyPicks: false,
+     hat: []
    }
   },
   watch: {
@@ -191,15 +205,6 @@ export default {
         return this.collection.filter((game) => game.name.toLowerCase().includes(this.filterText.toLowerCase()));
       } else {
         return [];
-      }
-    },
-    buttonClass () {
-      if (this.checked) {
-        return "btn-success";
-      } else if (this.loading) {
-        return "btn-secondary";
-      } else {
-        return "btn-primary";
       }
     }
   },
@@ -354,32 +359,21 @@ export default {
         this.alert = null
       }, timer || 3000);
     },
-    async addGame(game) {
-      this.loading = true;
-      const hat = await this.$axios.get(
+    alreadyInHat (game) {
+      return Object.keys(this.hat).find((entry) => {
+        const sameUser = this.hat[entry].user.email == this.$store.state.email;
+        const sameGame = this.hat[entry].game.id == game.attributes.objectId;
+
+        return sameUser && sameGame;
+      });
+    },
+    async reloadHat () {
+      this.hat = await this.$axios.$get(
         `https://game-hat-default-rtdb.firebaseio.com/game-hats/${this.$store.state.bggUsername}.json`
       );
-
-      if (hat.data) {
-        const duplicateGame = Object.keys(hat.data).find((entry) => {
-          const sameUser = hat.data[entry].user.email == this.$store.state.email;
-          const sameGame = hat.data[entry].game.id == game.attributes.objectId;
-  
-          return sameUser && sameGame;
-        });
-  
-        if (duplicateGame) {
-          this.loading = false;
-          this.showAlert("Already in hat", "alert-warning", 2000)
-          
-          setTimeout(() => {
-            this.checked = false;
-            this.clearSelection();
-          }, 1500);
-
-          return;
-        }        
-      }
+    },
+    async addGame(game) {
+      this.loading = true;
 
       const fullGame = await this.$store.dispatch('getBGGItem', game.attributes.objectId);
 
@@ -404,6 +398,7 @@ export default {
         if (post.statusText == 'OK') {
           this.loading = false;
           this.checked = true;
+          await this.reloadHat();
 
           setTimeout(() => {
             this.checked = false;
@@ -456,6 +451,15 @@ export default {
         return [];
       }
     },
+    buttonClass (game) {
+      if (this.alreadyInHat(game)) {
+        return "btn-success";
+      } else if (this.loading) {
+        return "btn-secondary";
+      } else {
+        return "btn-primary";
+      }
+    }
   },
 }
 </script>
@@ -556,6 +560,29 @@ export default {
 
         @media screen and (min-width: 576px) {
           max-height: 200px;
+        }
+      }
+
+      .in-hat-indicator {
+        align-items: center;
+        background: #378805;
+        border-radius: 50%;
+        display: flex;
+        height: 12px;
+        justify-content: center;
+        left: 12px;
+        padding: 12px;
+        position: absolute;
+        top: 12px;
+        width: 12px;
+
+        svg {
+          height: 12px;
+          width: 12px;
+
+          path {
+            fill: white;
+          }
         }
       }
     }
