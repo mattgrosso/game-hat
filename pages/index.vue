@@ -27,7 +27,7 @@
       </div>
     </div>
     <div v-if="showUsernamePrompt" class="username-prompt">
-      <h2 class="mb-2">Who's hat do you want to use?</h2>
+      <h2 class="mb-2">Whose hat do you want to use?</h2>
       <div class="input-group" @keyup="handleKeyup($event, 'bggUserPromptInput')">
         <input type="text" class="form-control" ref="bggUserPromptInput" placeholder="BGG Username">
         <button class="btn btn-primary" @click="saveBGGUser('bggUserPromptInput')">Go</button>
