@@ -1,15 +1,15 @@
 <template>
   <div class="guide-me">
     <div v-if="!playerCount" class="player-count">
-      <h2>How Many Players?</h2>
-      <button class="btn btn-secondary col-5" @click="playerCount = '1'">1</button>
-      <button class="btn btn-secondary col-5" @click="playerCount = '2'">2</button>
-      <button class="btn btn-secondary col-5" @click="playerCount = '3'">3</button>
-      <button class="btn btn-secondary col-5" @click="playerCount = '4'">4</button>
-      <button class="btn btn-secondary col-5" @click="playerCount = '5'">5</button>
-      <button class="btn btn-secondary col-5" @click="playerCount = '6'">6</button>
-      <button class="btn btn-secondary col-5" @click="playerCount = '7'">7</button>
-      <button class="btn btn-secondary col-5" @click="playerCount = '8 or more'">8+</button>
+      <h2 class="text-light d-flex align-items-center">How Many Players?</h2>
+      <button class="btn btn-light col-5" @click="playerCount = '1'">1</button>
+      <button class="btn btn-light col-5" @click="playerCount = '2'">2</button>
+      <button class="btn btn-light col-5" @click="playerCount = '3'">3</button>
+      <button class="btn btn-light col-5" @click="playerCount = '4'">4</button>
+      <button class="btn btn-light col-5" @click="playerCount = '5'">5</button>
+      <button class="btn btn-light col-5" @click="playerCount = '6'">6</button>
+      <button class="btn btn-light col-5" @click="playerCount = '7'">7</button>
+      <button class="btn btn-light col-5" @click="playerCount = '8 or more'">8+</button>
     </div>
     <div v-else-if="loadingCollection" class="collection-loading">
       <div class="button-icon spinner-grow text-info" role="status">
@@ -19,7 +19,7 @@
     <div v-else-if="drawnGame" class="drawn-game px-3">
       <img class="my-3" :src="drawnGame.imageUrl" :alt="`${drawnGame.name} Cover`">
       <h2 class="col-12 text-center">{{ drawnGame.name }}</h2>
-      <button class="btn secondary" @click="reset">Try again</button>
+      <button class="btn btn-secondary" @click="reset">Try again</button>
     </div>
     <div v-else class="two-choices">
       <button
@@ -201,10 +201,12 @@ export default {
 
 <style lang="scss">
 .guide-me {
+  background: #74b2d3;
+
   .player-count {
     display: flex;
-    height: 90vh;
-    padding: 50px 24px;
+    height: 100vh;
+    padding: 0 24px 50px;
     justify-content: center;
     row-gap: 10px;
     column-gap: 10px;
