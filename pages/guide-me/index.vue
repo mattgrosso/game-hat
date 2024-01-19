@@ -11,8 +11,18 @@
       <button class="btn btn-light col-5" @click="playerCount = '7'">7</button>
       <button class="btn btn-light col-5" @click="playerCount = '8 or more'">8+</button>
     </div>
-    <div v-else-if="loadingCollection" class="collection-loading">
-      <div class="button-icon spinner-grow text-info" role="status">
+    <div v-else-if="loading" class="loading">
+      <div v-if="uselessFact" class="useless-fact p-5">
+        <h4 class="text-light d-flex align-items-center">
+          ChatGPT is thinking
+          <div class="spinner-border spinner-border-sm mx-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </h4>
+        <h4 class="text-light">While you wait here's a fact from the internet.</h4>
+        <h2 class="text-light my-5">{{ uselessFact }}</h2>
+      </div>
+      <div v-else class="button-icon spinner-grow text-info" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
     </div>
@@ -50,12 +60,13 @@ export default {
   data () {
     return {
       collection: [],
-      loadingCollection: false,
+      loading: false,
       categoryOne: null,
       categoryTwo: null,
       excludeWords: [],
       drawnGame: null,
-      playerCount: null
+      playerCount: null,
+      uselessFact: null
     }
   },
   async mounted () {
@@ -66,14 +77,23 @@ export default {
     } else {
       this.$store.commit("setBGGUser", bggUser);
 
-      this.loadingCollection = true;
+      this.loading = true;
 
       const collection = await this.$store.dispatch('getBGGUserCollection', this.$store.state.bggUsername);
       this.collection = collection;
 
       await this.splitGamesIntoTwoCategories(this.collection.map((game) => game.name).join(','));
 
-      this.loadingCollection = false;
+      this.loading = false;
+    }
+  },
+  watch: {
+    loading (newValue) {
+      if (newValue) {
+        this.getUselessFact();
+      } else {
+        this.uselessFact = null;
+      }
     }
   },
   computed: {
@@ -100,11 +120,10 @@ export default {
   },
   methods: {
     async splitGamesIntoTwoCategories (listOfTitles) {
-      console.log('number of titles: ', listOfTitles.split(',').length);
       if (listOfTitles.split(',').length === 1) {
         this.drawGame(listOfTitles);
       } else {
-        this.loadingCollection = true;
+        this.loading = true;
         const apiKey = process.env.chatGPTAPIKey;
         const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
   
@@ -144,7 +163,7 @@ export default {
           });
   
         this.parseChatGPTResponse(response);
-        this.loadingCollection = false;
+        this.loading = false;
       }
     },
     parseChatGPTResponse (response) {
@@ -188,6 +207,11 @@ export default {
     pluralize (word, count) {
       return pluralize(word, count);
     },
+    async getUselessFact () {
+      const fact = await axios.get('https://uselessfacts.jsph.pl/api/v2/facts/random?language=en');
+
+      this.uselessFact = fact.data.text;
+    },
     reset () {
       this.categoryOne = null;
       this.categoryTwo = null;
@@ -217,10 +241,10 @@ export default {
     }
   }
 
-  .collection-loading {
+  .loading {
     align-items: center;
     display: flex;
-    height: 80vh;
+    height: 100vh;
     justify-content: center;
 
     .button-icon {
