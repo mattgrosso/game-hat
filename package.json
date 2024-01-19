@@ -26,6 +26,7 @@
     "lodash": "^4.17.20",
     "node-sass": "^5.0.0",
     "nuxt": "^2.14.6",
+    "pluralize": "^8.0.0",
     "sass-loader": "^10.1.1",
     "style-loader": "^2.0.0",
     "vue-scrollto": "^2.20.0",

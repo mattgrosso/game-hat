@@ -18,12 +18,15 @@
       <h2 class="subtitle h5 col-12">What would you like to do?</h2>
       <div class="options p-4">
         <nuxt-link to="/add-games">
-          <button class="btn btn-primary my-3 md-mx-3">Add games to the hat</button>
+          <button class="btn btn-primary my-3 md-mx-3 col-12">Add games to the hat</button>
         </nuxt-link>
         <nuxt-link to="/draw-game">
-          <button class="btn btn-success my-3 md-mx-3">Draw a game from the hat</button>
+          <button class="btn btn-success my-3 md-mx-3 col-12">Draw a game from the hat</button>
         </nuxt-link>
-        <button v-if="!switchingHats" class="btn btn-secondary my-3 md-mx-3" @click="switchingHats = true">Switch hats</button>
+        <nuxt-link to="/guide-me">
+          <button class="btn btn-success my-3 md-mx-3 col-12">Guide Me</button>
+        </nuxt-link>
+        <button v-if="!switchingHats" class="btn btn-secondary my-5 md-mx-3" @click="switchingHats = true">Switch hats</button>
       </div>
     </div>
     <div v-if="showUsernamePrompt" class="username-prompt">

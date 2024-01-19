@@ -39,7 +39,8 @@ export default {
   },
 
   env: {
-    fbAPIKey: process.env.fbAPIKey
+    fbAPIKey: process.env.fbAPIKey,
+    chatGPTAPIKey: process.env.chatGPTAPIKey,
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
