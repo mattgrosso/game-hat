@@ -1,0 +1,15 @@
+{
+  // Locked 2026-11-11. The database had been readable by anyone, `users`
+  // (24 people's emails and BoardGameGeek names) included, and the app has
+  // not been used since 2022. Nothing is deleted: this only shuts the door.
+  // A copy of the data as it stood is in ~/.config/game-hat/ on the laptop.
+  //
+  // To bring the app back, write real rules first. The app reads
+  // game-hats/<bggUsername> and users without a sign-in token (pages/
+  // draw-game, pages/add-games), so those calls need `?auth=` added, and
+  // `users` should be readable only by the signed-in person it belongs to.
+  "rules": {
+    ".read": false,
+    ".write": false
+  }
+}
